@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Unit;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignIdFor(Unit::class);
-            $table->decimal('min_qty')->default(0);
-            $table->decimal('qty')->default(0);
-            $table->decimal('price')->default(0);
-            $table->decimal('gst_rate')->default(0);
-            $table->softDeletes();
+            $table->string('gst_tin_no')->nullable();
+            $table->string('address')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('suppliers');
     }
 };

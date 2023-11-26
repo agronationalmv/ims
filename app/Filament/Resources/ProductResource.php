@@ -39,11 +39,15 @@ class ProductResource extends Resource
                     ->required()
                     ->numeric()
                     ->default(0.00),
-                Forms\Components\TextInput::make('cost')
+                Forms\Components\TextInput::make('price')
                     ->required()
                     ->numeric()
                     ->default(0.00)
-                    ->prefix('MVR')
+                    ->prefix('MVR'),
+                Forms\Components\TextInput::make('gst_rate')
+                    ->required()
+                    ->numeric()
+                    ->default(0.00)
             ]);
     }
 
@@ -59,7 +63,9 @@ class ProductResource extends Resource
                     ->numeric(),
                 Tables\Columns\TextColumn::make('qty')
                     ->numeric(),
-                Tables\Columns\TextColumn::make('cost')
+                Tables\Columns\TextColumn::make('gst_rate')
+                    ->numeric(),
+                Tables\Columns\TextColumn::make('price')
                     ->money()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('deleted_at')
