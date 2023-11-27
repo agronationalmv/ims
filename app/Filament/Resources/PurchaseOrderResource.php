@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Enum\PurchaseOrderStatus;
 use App\Filament\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\Product;
@@ -12,6 +13,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\HtmlString;
 
 class PurchaseOrderResource extends Resource
 {
@@ -37,13 +40,13 @@ class PurchaseOrderResource extends Resource
 
                 Forms\Components\Section::make()
                     ->schema([
-                        Forms\Components\Placeholder::make('created_at')
-                            ->label('Created at')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->created_at?->diffForHumans()),
+                        // Forms\Components\Placeholder::make('created_at')
+                        //     ->label('Created at')
+                        //     ->content(fn (PurchaseOrder $record): ?string => $record->created_at?->diffForHumans()),
 
-                        Forms\Components\Placeholder::make('updated_at')
-                            ->label('Last modified at')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->updated_at?->diffForHumans()),
+                        // Forms\Components\Placeholder::make('updated_at')
+                        //     ->label('Last modified at')
+                        //     ->content(fn (PurchaseOrder $record): ?string => $record->updated_at?->diffForHumans()),
                         
                         Forms\Components\Placeholder::make('subtotal')
                             ->label('Subtotal')
@@ -56,6 +59,14 @@ class PurchaseOrderResource extends Resource
                         Forms\Components\Placeholder::make('net_total')
                             ->label('Total')
                             ->content(fn (PurchaseOrder $record): ?string => $record->net_total),
+                        Forms\Components\Placeholder::make('status')
+                            ->content(function(PurchaseOrder $record){
+                                        return new HtmlString(
+                                            Blade::render('<x-filament::badge color="{{$record->status->getColor()}}">
+                                                    {{$record->status}}
+                                                </x-filament::badge>',['record'=>$record])
+                                            );
+                            }),
 
                     ])
                     ->columnSpan(['lg' => 1])
@@ -74,6 +85,8 @@ class PurchaseOrderResource extends Resource
                 Tables\Columns\TextColumn::make('net_total')
                     ->numeric($decimalPlaces=2)
                     ->prefix('MVR '),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge(PurchaseOrderStatus::class),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -125,12 +138,12 @@ class PurchaseOrderResource extends Resource
                         ->label('Product')
                         ->options(Product::query()->pluck('name', 'id'))
                         ->required()
-                        ->reactive()
+                        ->live()
                         ->afterStateUpdated(function($state, Forms\Set $set){
                             $product=Product::find($state);
                             $set('price', $product?->price ?? 0);
                             $set('gst_rate', $product?->gst_rate ?? 0);
-
+                            $set('total', ($product?->price*$product?->qty*(1+$product?->gst_rate)) ?? 0);
                         })
                         ->columnSpan([
                             'md' => 5,
@@ -139,7 +152,11 @@ class PurchaseOrderResource extends Resource
 
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
-                        ->numeric()
+                        ->live(debounce: 500)
+                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
+                        })
+                        ->numeric($decimalPlaces=2)
                         ->default(1)
                         ->columnSpan([
                             'md' => 2,
@@ -148,8 +165,12 @@ class PurchaseOrderResource extends Resource
 
                     Forms\Components\TextInput::make('price')
                         ->label('Price')
+                        ->live(debounce: 500)
+                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
+                        })
                         ->dehydrated()
-                        ->numeric()
+                        ->numeric($decimalPlaces=2)
                         ->required()
                         ->columnSpan([
                             'md' => 3,
@@ -158,14 +179,23 @@ class PurchaseOrderResource extends Resource
                         ->label('GST Rate')
                         ->disabled()
                         ->dehydrated()
-                        ->numeric()
+                        ->numeric($decimalPlaces=3)
+                        ->required()
+                        ->columnSpan([
+                            'md' => 2,
+                        ]),
+                    Forms\Components\TextInput::make('total')
+                        ->label('Subtotal')
+                        ->disabled()
+                        ->dehydrated()
+                        ->numeric($decimalPlaces=2)
                         ->required()
                         ->columnSpan([
                             'md' => 2,
                         ]),
                 ])
                 ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                    $data['total']=$data['price']*$data['qty'];
+                    $data['total']=$data['price']*$data['qty']*(1+$data['gst_rate']);
                     return $data;
                 })
                 ->defaultItems(1)
@@ -195,4 +225,5 @@ class PurchaseOrderResource extends Resource
                 }),
         ]; 
     }
+    
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PurchaseOrderResource\Pages;
 
 use App\Filament\Resources\PurchaseOrderResource;
+use App\Services\PurchaseOrderService;
 use Filament\Actions;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard\Step;
@@ -18,11 +19,8 @@ class CreatePurchaseOrder extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $order=$this->record;
-        $order->subtotal=$this->calculate_subtotal($order->items);   
-        $order->total_gst=$this->calculate_gst($order->items);  
-        $order->net_total=$order->subtotal+$order->total_gst;
-        $order->save();
+        $purchaseOrderService=app(PurchaseOrderService::class);
+        $purchaseOrderService->updateTotal($this->record);
     }
 
     protected function getSteps(): array
@@ -38,19 +36,5 @@ class CreatePurchaseOrder extends CreateRecord
                     Section::make()->schema(PurchaseOrderResource::getFormSchema('items')),
                 ]),
         ];
-    }
-
-    public function calculate_gst(Collection $items){
-        return $items->reduce(function($carry,$item){
-            $carry+=$item->gst_rate*$item->qty*$item->price;
-            return $carry;
-        },0);
-    }
-
-    public function calculate_subtotal(Collection $items){
-        return $items->reduce(function($carry,$item){
-            $carry+=$item->qty*$item->price;
-            return $carry;
-        },0);
     }
 }
