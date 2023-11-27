@@ -13,6 +13,14 @@ class Product extends Model
 
     protected $guarded=[];
 
+    protected $casts=[
+        'price'=>'float',
+        'gst_rate'=>'float',
+        'qty'=>'float',
+        'min_qty'=>'float',
+
+    ];
+
     public function unit() : BelongsTo {
         return $this->belongsTo(Unit::class);
     }
