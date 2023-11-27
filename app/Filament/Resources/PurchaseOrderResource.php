@@ -40,14 +40,6 @@ class PurchaseOrderResource extends Resource
 
                 Forms\Components\Section::make()
                     ->schema([
-                        // Forms\Components\Placeholder::make('created_at')
-                        //     ->label('Created at')
-                        //     ->content(fn (PurchaseOrder $record): ?string => $record->created_at?->diffForHumans()),
-
-                        // Forms\Components\Placeholder::make('updated_at')
-                        //     ->label('Last modified at')
-                        //     ->content(fn (PurchaseOrder $record): ?string => $record->updated_at?->diffForHumans()),
-                        
                         Forms\Components\Placeholder::make('subtotal')
                             ->label('Subtotal')
                             ->content(fn (PurchaseOrder $record): ?string => $record->subtotal),

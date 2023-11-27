@@ -10,7 +10,8 @@ enum PurchaseOrderStatus: string implements HasColor, HasLabel, HasActions
 {
     case Draft = 'draft';
     case Reviewing = 'reviewing';
-    case Published = 'published';
+    case Approved = 'approved';
+    case Completed = 'completed';
     case Rejected = 'rejected';
     
     public function getLabel(): ?string
@@ -18,7 +19,8 @@ enum PurchaseOrderStatus: string implements HasColor, HasLabel, HasActions
         return match ($this) {
             self::Draft => 'Draft',
             self::Reviewing => 'Reviewing',
-            self::Published => 'Published',
+            self::Approved => 'Approved',
+            self::Completed => 'Completed',
             self::Rejected => 'Rejected',
         };
     }
@@ -28,7 +30,8 @@ enum PurchaseOrderStatus: string implements HasColor, HasLabel, HasActions
         return match ($this) {
             self::Draft => 'gray',
             self::Reviewing => 'warning',
-            self::Published => 'success',
+            self::Approved => 'warning',
+            self::Completed => 'success',
             self::Rejected => 'danger',
         };
     }
@@ -36,9 +39,10 @@ enum PurchaseOrderStatus: string implements HasColor, HasLabel, HasActions
     public function getActions(): ?array
     {
         return match ($this) {
-            self::Draft => ['publish'=>self::Published,'reject'=>self::Rejected],
-            // self::Reviewing => ['publish'=>self::Published,'reject'=>self::Rejected],
-            self::Published => [],
+            self::Draft => ['publish'=>self::Approved,'reject'=>self::Rejected],
+            // self::Reviewing => ['publish'=>self::Approved,'reject'=>self::Rejected],
+            self::Approved => ['complete'=>self::Completed,'reject'=>self::Rejected],
+            self::Completed => [],
             self::Rejected => [],
         };
     }
