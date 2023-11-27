@@ -31,9 +31,9 @@ class CreatePoReceive extends CreateRecord
     {
         foreach($this->record->items as $item){
             $product=$item->product;
-            $product->qty-=$item->qty;
+            $product->qty+=$item->qty;
             $product->save();
-        };
+        }
     }
 
     protected function getSteps(): array
