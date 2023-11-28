@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TransactionResource extends Resource
-{
-    protected static ?string $model = Transaction::class;
-    
+{    
+    protected static ?int $navigationSort = 7;
+
     protected static ?string $modelLabel = 'Request';
     protected static ?string $pluralModelLabel = 'Requests';
 

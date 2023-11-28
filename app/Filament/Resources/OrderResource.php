@@ -17,7 +17,12 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrderResource extends Resource
 {
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $model = Order::class;
+
+    protected static ?string $modelLabel = 'Product Release';
+    protected static ?string $pluralModelLabel = 'Product Releases';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

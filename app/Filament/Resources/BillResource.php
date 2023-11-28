@@ -21,6 +21,8 @@ use Livewire\Component;
 
 class BillResource extends Resource
 {
+    protected static ?int $navigationSort = 6;
+
     protected static ?string $model = Bill::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';

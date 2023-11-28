@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
+    protected static ?string $navigationGroup = "Settings";
+
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -86,6 +88,7 @@ class UserResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->role=='admin';
+        return true;
+        // return auth()->user()->role=='admin';
     }
 }

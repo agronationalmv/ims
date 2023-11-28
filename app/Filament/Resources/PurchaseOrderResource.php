@@ -18,6 +18,8 @@ use Illuminate\Support\HtmlString;
 
 class PurchaseOrderResource extends Resource
 {
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $model = PurchaseOrder::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
