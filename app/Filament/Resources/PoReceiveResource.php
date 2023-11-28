@@ -25,8 +25,8 @@ class PoReceiveResource extends Resource
 
     protected ?PurchaseOrder $purchaseOrder;
 
-    protected static ?string $modelLabel = 'Item Receive';
-    protected static ?string $pluralModelLabel = 'Item Receive';
+    protected static ?string $modelLabel = 'Item Receipt';
+    protected static ?string $pluralModelLabel = 'Item Receipts';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -43,21 +43,25 @@ class PoReceiveResource extends Resource
                         Forms\Components\Section::make('Items')
                             ->schema(static::getFormSchema('items')),
                     ])
-                    ->columnSpan(['lg' => fn (?string $operation) => $operation=='create'?3:2]),
+                    ->columnSpan(['lg' => fn (?string $operation) => $operation=='view'?2:3]),
 
                 Forms\Components\Section::make()
                     ->schema([
-                        Forms\Components\Placeholder::make('updated_at')
-                            ->label('Updated On')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->updated_at),
+                        Forms\Components\Placeholder::make('subtotal')
+                            ->label('Subtotal')
+                            ->content(fn (PurchaseOrder $record): ?string => $record->subtotal),
 
-                        Forms\Components\Placeholder::make('created_at')
-                            ->label('Created On')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->created_at)
+                        Forms\Components\Placeholder::make('total_gst')
+                            ->label('GST')
+                            ->content(fn (PurchaseOrder $record): ?string => $record->total_gst),
+
+                        Forms\Components\Placeholder::make('net_total')
+                            ->label('Total')
+                            ->content(fn (PurchaseOrder $record): ?string => $record->net_total)
 
                     ])
                     ->columnSpan(['lg' => 1])
-                    ->hidden(fn (?string $operation) => $operation!='create'),
+                    ->hidden(fn (?string $operation) => $operation!='view'),
             ])
             ->columns(3);
     }
@@ -71,7 +75,7 @@ class PoReceiveResource extends Resource
                 Tables\Columns\TextColumn::make('purchase_order.reference_no')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('received_date')
+                Tables\Columns\TextColumn::make('receipt_date')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('received_by.name')
@@ -129,6 +133,12 @@ class PoReceiveResource extends Resource
                         ->options(Product::query()->pluck('name', 'id'))
                         ->required()
                         ->live()
+                        ->afterStateUpdated(function($state, Forms\Set $set){
+                            $product=Product::find($state);
+                            $set('price', $product?->price ?? 0);
+                            $set('gst_rate', $product?->gst_rate ?? 0);
+                            $set('total', ($product?->price*$product?->qty*(1+$product?->gst_rate)) ?? 0);
+                        })
                         ->columnSpan([
                             'md' => 5,
                         ])
@@ -137,13 +147,51 @@ class PoReceiveResource extends Resource
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
                         ->live(debounce: 500)
+                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
+                        })
                         ->numeric($decimalPlaces=2)
                         ->default(1)
                         ->columnSpan([
                             'md' => 2,
                         ])
                         ->required(),
+
+                    Forms\Components\TextInput::make('price')
+                        ->label('Price')
+                        ->live(debounce: 500)
+                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
+                        })
+                        ->dehydrated()
+                        ->numeric($decimalPlaces=2)
+                        ->required()
+                        ->columnSpan([
+                            'md' => 3,
+                        ]),
+                    Forms\Components\TextInput::make('gst_rate')
+                        ->label('GST Rate')
+                        ->disabled()
+                        ->dehydrated()
+                        ->numeric($decimalPlaces=3)
+                        ->required()
+                        ->columnSpan([
+                            'md' => 2,
+                        ]),
+                    Forms\Components\TextInput::make('total')
+                        ->label('Subtotal')
+                        ->disabled()
+                        ->dehydrated()
+                        ->numeric($decimalPlaces=2)
+                        ->required()
+                        ->columnSpan([
+                            'md' => 2,
+                        ]),
                 ])
+                ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                    $data['total']=$data['price']*$data['qty']*(1+$data['gst_rate']);
+                    return $data;
+                })
                 ->defaultItems(1)
                 ->columns([
                     'md' => 10,
@@ -153,18 +201,13 @@ class PoReceiveResource extends Resource
         }
 
         return [
-            // Forms\Components\Placeholder::make('PO #')
-            //     ->content(fn(Component $livewire)=>$livewire->purchaseOrder?->reference_no)
-            //     ->columnSpan(2),
-            Forms\Components\Select::make('purchase_order_id')
-                ->label('PO#')
-                ->live()
-                ->afterStateUpdated(fn(Component $livewire, ?string $state)=>$livewire->purchaseOrder=PurchaseOrder::find($state))
-                ->options(PurchaseOrder::query()->where('status',PurchaseOrderStatus::Approved)->pluck('reference_no', 'id'))
-                ->required(),
             Forms\Components\TextInput::make('reference_no')
-                ->maxLength(255),
-            Forms\Components\DatePicker::make('received_date')
+                ->required(),
+            Forms\Components\Select::make('purchase_order_id')
+                ->relationship('purchase_order', 'name')
+                ->searchable()
+                ->required(),
+            Forms\Components\DatePicker::make('receipt_date')
                 ->required(),
         ]; 
     }

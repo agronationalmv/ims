@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
+use Livewire\Component;
 
 class PurchaseOrderResource extends Resource
 {
@@ -38,33 +39,31 @@ class PurchaseOrderResource extends Resource
                         Forms\Components\Section::make('Items')
                             ->schema(static::getFormSchema('items')),
                     ])
-                    ->columnSpan(['lg' => fn (?string $operation) => $operation=='view'?2:3]),
+                    ->columnSpan(['lg' => 2]),
 
                 Forms\Components\Section::make()
                     ->schema([
-                        Forms\Components\Placeholder::make('subtotal')
+                        Forms\Components\TextInput::make('subtotal')
                             ->label('Subtotal')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->subtotal),
-
-                        Forms\Components\Placeholder::make('total_gst')
-                            ->label('GST')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->total_gst),
-
-                        Forms\Components\Placeholder::make('net_total')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('total_gst')
+                            ->label('Total GST')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('net_total')
                             ->label('Total')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->net_total),
+                            ->disabled(),
                         Forms\Components\Placeholder::make('status')
-                            ->content(function(PurchaseOrder $record){
+                            ->content(function(?PurchaseOrder $record){
                                         return new HtmlString(
                                             Blade::render('<x-filament::badge color="{{$record->status->getColor()}}">
                                                     {{$record->status}}
                                                 </x-filament::badge>',['record'=>$record])
                                             );
-                            }),
+                            })
+                            ->hidden(fn (?string $operation) => $operation=='create'),
 
                     ])
                     ->columnSpan(['lg' => 1])
-                    ->hidden(fn (?string $operation) => $operation!='view'),
             ])
             ->columns(3);
     }
@@ -133,11 +132,14 @@ class PurchaseOrderResource extends Resource
                         ->options(Product::query()->pluck('name', 'id'))
                         ->required()
                         ->live()
-                        ->afterStateUpdated(function($state, Forms\Set $set){
-                            $product=Product::find($state);
-                            $set('price', $product?->price ?? 0);
-                            $set('gst_rate', $product?->gst_rate ?? 0);
-                            $set('total', ($product?->price*$product?->qty*(1+$product?->gst_rate)) ?? 0);
+                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                            $product=Product::find($get('product_id'));
+                            $price=floatVal($product?->price);
+                            $gst_rate=floatVal($product?->gst_rate);
+                            $set('price', $price);
+                            $set('gst_rate', $gst_rate);
+                            $total=$price*(1+$gst_rate);
+                            $set('total', $total);
                         })
                         ->columnSpan([
                             'md' => 5,
@@ -196,6 +198,10 @@ class PurchaseOrderResource extends Resource
                 ->columns([
                     'md' => 10,
                 ])
+                ->live()
+                ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                    self::updateTotals($get,$set);
+                })
                 ->required()
             ];
         }
@@ -218,6 +224,27 @@ class PurchaseOrderResource extends Resource
                         ->modalWidth('lg');
                 }),
         ]; 
+    }
+
+    public static function updateTotals(Forms\Get $get, Forms\Set $set): void
+    {
+        // Retrieve all selected products and remove empty rows
+        $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['qty']));
+    
+
+        // Calculate subtotal based on the selected products and quantities
+        $subtotal = $selectedProducts->reduce(function ($subtotal, $product) {
+            return $subtotal + ($product['price'] * $product['qty']);
+        }, 0);
+
+        $total_gst = $selectedProducts->reduce(function ($gst_total, $product) {
+            return $gst_total + ($product['price']*$product['gst_rate'] * $product['qty']);
+        }, 0);
+    
+        // Update the state with the new values
+        $set('subtotal', number_format($subtotal, 2, '.', ''));
+        $set('total_gst', number_format($total_gst, 2, '.', ''));
+        $set('net_total', number_format($subtotal + $total_gst, 2, '.', ''));
     }
     
 }

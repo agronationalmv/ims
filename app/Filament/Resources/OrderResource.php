@@ -21,8 +21,8 @@ class OrderResource extends Resource
 
     protected static ?string $model = Order::class;
 
-    protected static ?string $modelLabel = 'Product Release';
-    protected static ?string $pluralModelLabel = 'Product Releases';
+    protected static ?string $modelLabel = 'Consumption';
+    protected static ?string $pluralModelLabel = 'Consumptions';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class CreatePurchaseOrder extends CreateRecord
 {
-    use HasWizard;
+    // use HasWizard;
 
     protected static string $resource = PurchaseOrderResource::class;
 
@@ -23,18 +23,18 @@ class CreatePurchaseOrder extends CreateRecord
         $purchaseOrderService->updateTotal($this->record);
     }
 
-    protected function getSteps(): array
-    {
-        return [
-            Step::make('Details')
-                ->schema([
-                    Section::make()->schema(PurchaseOrderResource::getFormSchema())->columns(),
-                ]),
+    // protected function getSteps(): array
+    // {
+    //     return [
+    //         Step::make('Details')
+    //             ->schema([
+    //                 Section::make()->schema(PurchaseOrderResource::getFormSchema())->columns(),
+    //             ]),
 
-            Step::make('Items')
-                ->schema([
-                    Section::make()->schema(PurchaseOrderResource::getFormSchema('items')),
-                ]),
-        ];
-    }
+    //         Step::make('Items')
+    //             ->schema([
+    //                 Section::make()->schema(PurchaseOrderResource::getFormSchema('items')),
+    //             ]),
+    //     ];
+    // }
 }

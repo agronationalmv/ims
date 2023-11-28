@@ -221,7 +221,6 @@ class BillResource extends Resource
     // This function updates totals based on the selected products and quantities
     public static function updateTotals(Forms\Get $get, Forms\Set $set): void
     {
-        Log::info($get('items'));
         // Retrieve all selected products and remove empty rows
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['qty']));
     

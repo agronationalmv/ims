@@ -5,6 +5,7 @@ namespace App\Filament\Resources\PoReceiveResource\Pages;
 use App\Filament\Resources\PoReceiveResource;
 use App\Models\PoReceive;
 use App\Models\PurchaseOrder;
+use App\Models\Transaction;
 use Filament\Actions;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard\Step;
@@ -24,16 +25,24 @@ class CreatePoReceive extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $po=PurchaseOrder::find($data['purchase_order_id']);
         $data['received_by_id']=auth()->id();
+        $data['supplier_id']=$po->supplier_id;
         return $data;
     }
     protected function afterCreate(): void
     {
         foreach($this->record->items as $item){
             $product=$item->product;
-            $product->qty+=$item->qty;
+            $product->qty=$this->product_balance($product);
             $product->save();
         }
+    }
+
+    public function product_balance($product) {
+        $in=Transaction::where('transaction_type','in')->sum('qty');
+        $out=Transaction::where('transaction_type','in')->sum('qty');
+        return $in-$out;
     }
 
     protected function getSteps(): array

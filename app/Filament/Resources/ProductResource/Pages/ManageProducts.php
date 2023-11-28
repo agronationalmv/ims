@@ -13,10 +13,10 @@ class ManageProducts extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make("Quick Adjustment"),
             Actions\CreateAction::make()
                 ->mutateFormDataUsing(function (array $data): array {
                     $data['user_id'] = auth()->id();
-            
                     return $data;
                 }),
         ];
