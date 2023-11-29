@@ -6,6 +6,7 @@ use App\Filament\Resources\PurchaseOrderResource;
 use App\Filament\Traits\HasCancelAction;
 use App\Models\PurchaseOrder;
 use Filament\Actions;
+use Filament\Forms\Components\Tabs\Tab;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewPurchaseOrder extends ViewRecord

@@ -39,7 +39,7 @@ enum PurchaseOrderStatus: string implements HasColor, HasLabel, HasActions
     public function getActions(): ?array
     {
         return match ($this) {
-            self::Draft => ['publish'=>self::Approved,'reject'=>self::Rejected],
+            self::Draft => ['approve'=>self::Approved,'reject'=>self::Rejected],
             // self::Reviewing => ['publish'=>self::Approved,'reject'=>self::Rejected],
             self::Approved => ['complete'=>self::Completed,'reject'=>self::Rejected],
             self::Completed => [],

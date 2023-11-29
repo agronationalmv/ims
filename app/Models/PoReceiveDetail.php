@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Contracts\TransactionableModel;
+use App\Models\Enums\TransactionTypeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class PoReceiveDetail extends Model
+class PoReceiveDetail extends TransactionableModel
 {
     use HasFactory;
 
@@ -19,6 +21,11 @@ class PoReceiveDetail extends Model
 
     public function po_receive() : BelongsTo {
         return $this->belongsTo(PoReceive::class);
+    }
+
+    public function getTransactionType()
+    {
+        return TransactionTypeEnum::In->value;
     }
 
 }

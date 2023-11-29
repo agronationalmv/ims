@@ -125,10 +125,8 @@ class OrderResource extends Resource
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                             $product=Product::find($get('product_id'));
                             $price=floatVal($product?->price);
-                            $gst_rate=floatVal($product?->gst_rate);
                             $set('price', $price);
-                            $set('gst_rate', $gst_rate);
-                            $total=$price*(1+$gst_rate);
+                            $total=$price*1;
                             $set('total', $total);
                         })
                         ->columnSpan([
@@ -140,48 +138,17 @@ class OrderResource extends Resource
                         ->label('Quantity')
                         ->live(debounce: 500)
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
+                            $set('total', round(($get('price')*$get('qty')) ?? 0,2));
                         })
                         ->numeric($decimalPlaces=2)
                         ->default(1)
                         ->columnSpan([
                             'md' => 2,
                         ])
-                        ->required(),
-
-                    Forms\Components\TextInput::make('price')
-                        ->label('Price')
-                        ->live(debounce: 500)
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                        })
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
                         ->required()
-                        ->columnSpan([
-                            'md' => 3,
-                        ]),
-                    Forms\Components\TextInput::make('gst_rate')
-                        ->label('GST Rate')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=3)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
-                    Forms\Components\TextInput::make('total')
-                        ->label('Subtotal')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
                 ])
                 ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                    $data['total']=$data['price']*$data['qty']*(1+$data['gst_rate']);
+                    $data['total']=$data['price']*$data['qty'];
                     return $data;
                 })
                 ->defaultItems(1)
@@ -189,9 +156,6 @@ class OrderResource extends Resource
                     'md' => 10,
                 ])
                 ->live()
-                ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                    self::updateTotals($get,$set);
-                })
                 ->required()
             ];
         }

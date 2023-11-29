@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->morphs('transactionable');
             $table->foreignIdFor(Product::class);
             $table->decimal('qty');
             $table->string('transaction_type');

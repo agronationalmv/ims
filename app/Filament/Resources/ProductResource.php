@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
-use App\Models\Unit;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,8 +15,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
-    protected static ?int $navigationSort = 2;
-
     protected static ?string $model = Product::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -26,30 +23,35 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('unit_id')
-                        ->label('UOM')
-                        ->options(Unit::all()->pluck('name', 'id'))
+                Forms\Components\Section::make()
+                ->schema([
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+                    Forms\Components\Select::make('unit_id')
+                        ->relationship('unit', 'name')
                         ->required(),
-                Forms\Components\TextInput::make('min_qty')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00),
-                Forms\Components\TextInput::make('qty')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00),
-                Forms\Components\TextInput::make('price')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00)
-                    ->prefix('MVR'),
-                Forms\Components\TextInput::make('gst_rate')
-                    ->required()
-                    ->numeric()
-                    ->default(0.00)
+                    Forms\Components\TextInput::make('min_qty')
+                        ->required()
+                        ->numeric()
+                        ->default(0.00),
+                    Forms\Components\TextInput::make('qty')
+                        ->required()
+                        ->numeric()
+                        ->default(0.00),
+                    Forms\Components\TextInput::make('price')
+                        ->required()
+                        ->numeric()
+                        ->default(0.00)
+                        ->prefix('$'),
+                    Forms\Components\TextInput::make('gst_rate')
+                        ->required()
+                        ->numeric()
+                        ->default(0.000),
+                    Forms\Components\Select::make('user_id')
+                        ->relationship('user', 'name'),
+                ])
+                ->columns(2)
             ]);
     }
 
@@ -58,17 +60,21 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('unit.name')
+                    ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('unit.name'),
                 Tables\Columns\TextColumn::make('min_qty')
-                    ->numeric(),
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('qty')
-                    ->numeric(),
-                Tables\Columns\TextColumn::make('gst_rate')
-                    ->numeric(),
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('price')
                     ->money()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('gst_rate')
+                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
@@ -83,19 +89,15 @@ class ProductResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('User')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->numeric()
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                        ->mutateFormDataUsing(function (array $data): array {
-                            $data['user_id'] = auth()->id();
-                            return $data;
-                        }),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -104,11 +106,20 @@ class ProductResource extends Resource
             ]);
     }
 
-    public static function getPages(): array
+    public static function getRelations(): array
     {
         return [
-            'index' => Pages\ManageProducts::route('/'),
+            RelationManagers\AdjutsmentsRelationManager::class,
         ];
     }
 
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListProducts::route('/'),
+            'create' => Pages\CreateProduct::route('/create'),
+            'view' => Pages\ViewProduct::route('/{record}'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
+        ];
+    }
 }

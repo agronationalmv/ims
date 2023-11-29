@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('po_receives', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(PurchaseOrder::class);
+            $table->foreignIdFor(PurchaseOrder::class)->nullable();
             $table->string('reference_no')->nullable();
             $table->date('receipt_date');
             $table->foreignIdFor(Supplier::class)->nullable();

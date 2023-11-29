@@ -49,15 +49,15 @@ class PoReceiveResource extends Resource
                     ->schema([
                         Forms\Components\Placeholder::make('subtotal')
                             ->label('Subtotal')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->subtotal),
+                            ->content(fn (?PoReceive $record): ?string => $record->subtotal),
 
                         Forms\Components\Placeholder::make('total_gst')
                             ->label('GST')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->total_gst),
+                            ->content(fn (?PoReceive $record): ?string => $record->total_gst),
 
                         Forms\Components\Placeholder::make('net_total')
                             ->label('Total')
-                            ->content(fn (PurchaseOrder $record): ?string => $record->net_total)
+                            ->content(fn (?PoReceive $record): ?string => $record->net_total)
 
                     ])
                     ->columnSpan(['lg' => 1])
@@ -204,12 +204,19 @@ class PoReceiveResource extends Resource
             Forms\Components\TextInput::make('reference_no')
                 ->required(),
             Forms\Components\Select::make('purchase_order_id')
-                ->relationship('purchase_order', 'name')
+                ->relationship('purchase_order', 'reference_no')
                 ->searchable()
                 ->required(),
             Forms\Components\DatePicker::make('receipt_date')
                 ->required(),
         ]; 
+    }
+
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return true;
+        return auth()->user()->role=='admin';
     }
 
     

@@ -19,6 +19,8 @@ class TransactionResource extends Resource
 {    
     protected static ?int $navigationSort = 7;
 
+    protected static ?string $navigationGroup = "Settings";
+
     protected static ?string $modelLabel = 'Request';
     protected static ?string $pluralModelLabel = 'Requests';
 
@@ -36,6 +38,12 @@ class TransactionResource extends Resource
                 Forms\Components\TextInput::make('qty')
                     ->required()
                     ->numeric(),
+                Forms\Components\TextInput::make('price')
+                    ->required()
+                    ->numeric(),
+                Forms\Components\TextInput::make('total')
+                    ->required()
+                    ->numeric(),
                 Forms\Components\Select::make('transaction_type')
                     ->label('Type')
                     ->options(['in'=>'In','out'=>'Out'])
@@ -49,6 +57,8 @@ class TransactionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('product.name')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('transactionable_type')
+                    ->label('Category'),
                 Tables\Columns\TextColumn::make('qty')
                     ->numeric(),
                 Tables\Columns\TextColumn::make('transaction_type'),
