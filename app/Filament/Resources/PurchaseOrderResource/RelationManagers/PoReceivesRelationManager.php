@@ -84,26 +84,27 @@ class PoReceivesRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->visible(function(RelationManager $livewire){
-                        return $livewire->ownerRecord->status==PurchaseOrderStatus::Approved;
-                    })
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $po = $this->ownerRecord;
-                        $data['received_by_id'] = auth()->id();
-                        $data['supplier_id'] = $po->supplier_id;
-                        return $data;
-                    })
-                    ->after(function(){
-                        $balance=$this->ownerRecord
-                                    ->items->reduce(function($carry,$item){
-                                        return $carry+$item->balance;
-                                    },0);
-                        if($balance<=0){
-                            $this->ownerRecord->status = PurchaseOrderStatus::Completed;
-                            $this->ownerRecord->save();
-                        }
-                    }),
+                Tables\Actions\Action::make('New Receipt')
+                    ->url(fn (): string => route('filament.admin.resources.po-receives.create',['purchaseOrder'=>$this->ownerRecord->id]))
+                    // ->visible(function(RelationManager $livewire){
+                    //     return $livewire->ownerRecord->status==PurchaseOrderStatus::Approved;
+                    // })
+                    // ->mutateFormDataUsing(function (array $data): array {
+                    //     $po = $this->ownerRecord;
+                    //     $data['received_by_id'] = auth()->id();
+                    //     $data['supplier_id'] = $po->supplier_id;
+                    //     return $data;
+                    // })
+                    // ->after(function(){
+                    //     $balance=$this->ownerRecord
+                    //                 ->items->reduce(function($carry,$item){
+                    //                     return $carry+$item->balance;
+                    //                 },0);
+                    //     if($balance<=0){
+                    //         $this->ownerRecord->status = PurchaseOrderStatus::Completed;
+                    //         $this->ownerRecord->save();
+                    //     }
+                    // }),
             ])
             ->filters([
                 //

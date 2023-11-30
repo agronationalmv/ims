@@ -30,30 +30,29 @@ class OrderResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make('Items')
+                    ->schema(static::getFormSchema('items'))
+                    ->columnSpan(['lg' => 2]),
                 Forms\Components\Group::make()
                     ->schema([
                         Forms\Components\Section::make()
                             ->schema(static::getFormSchema())
-                            ->columns(2),
-
-                        Forms\Components\Section::make('Items')
-                            ->schema(static::getFormSchema('items')),
-                    ])
-                    ->columnSpan(['lg' => fn (?string $operation) => $operation=='create'?3:2]),
-
-                Forms\Components\Section::make()
-                    ->schema([
-                        Forms\Components\Placeholder::make('updated_at')
-                            ->label('Updated On')
-                            ->content(fn (?Order $record): ?string => $record?->updated_at),
-
-                        Forms\Components\Placeholder::make('created_at')
-                            ->label('Created On')
-                            ->content(fn (?Order $record): ?string => $record?->created_at)
-
+                            ->columns(1),
+                            Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\Placeholder::make('updated_at')
+                                    ->label('Updated On')
+                                    ->content(fn (?Order $record): ?string => $record?->updated_at),
+        
+                                Forms\Components\Placeholder::make('created_at')
+                                    ->label('Created On')
+                                    ->content(fn (?Order $record): ?string => $record?->created_at)
+        
+                            ])
+                            ->hidden(fn (?string $operation) => $operation=='create'),
                     ])
                     ->columnSpan(['lg' => 1])
-                    ->hidden(fn (?string $operation) => $operation=='create'),
+
             ])
             ->columns(3);
     }
@@ -122,18 +121,10 @@ class OrderResource extends Resource
                         ->options(Product::query()->pluck('name', 'id'))
                         ->required()
                         ->live()
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $product=Product::find($get('product_id'));
-                            $price=floatVal($product?->price);
-                            $set('price', $price);
-                            $total=$price*1;
-                            $set('total', $total);
-                        })
                         ->columnSpan([
                             'md' => 5,
                         ])
                         ->searchable(),
-
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
                         ->live(debounce: 500)
@@ -148,14 +139,17 @@ class OrderResource extends Resource
                         ->required()
                 ])
                 ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                    $data['total']=$data['price']*$data['qty'];
+                    $product=Product::find($data['product_id']);
+                    $price=floatVal($product?->price);
+                    $qty=floatVal($data['qty']);
+                    $data['price']=$price;
+                    $data['total']=$price*$qty;
                     return $data;
                 })
                 ->defaultItems(1)
                 ->columns([
                     'md' => 10,
                 ])
-                ->live()
                 ->required()
             ];
         }
@@ -164,6 +158,9 @@ class OrderResource extends Resource
             Forms\Components\TextInput::make('reference_no')
                 ->maxLength(255),
             Forms\Components\DatePicker::make('order_date')
+                ->format('Y-m-d')
+                ->native(false)
+                ->default(now())
                 ->required(),
             Forms\Components\Select::make('requested_by_id')
                 ->label('Requested By')

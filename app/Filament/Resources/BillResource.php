@@ -199,6 +199,9 @@ class BillResource extends Resource
             Forms\Components\TextInput::make('reference_no')
                 ->required(),
             Forms\Components\DatePicker::make('bill_date')
+                ->format('Y-m-d')
+                ->native(false)
+                ->default(now())
                 ->required(),
             Forms\Components\Select::make('supplier_id')
                 ->relationship('supplier', 'name')

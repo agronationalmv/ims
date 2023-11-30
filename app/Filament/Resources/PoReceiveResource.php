@@ -208,6 +208,9 @@ class PoReceiveResource extends Resource
                 ->searchable()
                 ->required(),
             Forms\Components\DatePicker::make('receipt_date')
+                ->format('Y-m-d')
+                ->native(false)
+                ->default(now())
                 ->required(),
         ]; 
     }

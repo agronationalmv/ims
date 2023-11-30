@@ -7,6 +7,7 @@ use App\Models\PoReceive;
 use App\Models\PurchaseOrder;
 use App\Models\Transaction;
 use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Resources\Pages\CreateRecord;
@@ -19,9 +20,22 @@ class CreatePoReceive extends CreateRecord
 {
     // use HasWizard;
 
-    public ?PurchaseOrder $purchaseOrder;
+    public ?PurchaseOrder $purchaseOrder=null;
 
     protected static string $resource = PoReceiveResource::class;
+
+    protected function afterFill(){
+        if($this->purchaseOrder){
+            $this->data['purchase_order_id']=$this->purchaseOrder?->id;
+            $this->data['items']=$this->purchaseOrder->items->map(function($item){
+                $item->qty=$item->balance;
+                return $item;
+            })
+            ->where('qty','>',0)
+            ->toArray();
+        }
+
+    }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -37,6 +51,17 @@ class CreatePoReceive extends CreateRecord
             $product->qty=$this->product_balance($product);
             $product->save();
         }
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        if($this->record->purchase_order_id){
+            return route('filament.admin.resources.purchase-orders.view', [
+                'record' => $this->record?->purchase_order_id,
+                'activeRelationManager'=>1
+            ]);
+        }
+        return $this->getResource()::getUrl('view',['record'=>$this->record]);
     }
 
     public function product_balance($product) {
