@@ -61,5 +61,6 @@ class DatabaseSeeder extends Seeder
             'address'=>'SOme where, Male'
         ]);
 
+        \App\Models\AdjustmentType::create(['name'=>'Damage']);
     }
 }

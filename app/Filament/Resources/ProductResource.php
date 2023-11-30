@@ -48,8 +48,6 @@ class ProductResource extends Resource
                         ->required()
                         ->numeric()
                         ->default(0.000),
-                    Forms\Components\Select::make('user_id')
-                        ->relationship('user', 'name'),
                 ])
                 ->columns(2)
             ]);
@@ -87,10 +85,7 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->numeric()
-                    ->sortable(),
+                    ->toggleable(isToggledHiddenByDefault: true)
             ])
             ->filters([
                 //

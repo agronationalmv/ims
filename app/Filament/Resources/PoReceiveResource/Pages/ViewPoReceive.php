@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PoReceiveResource\Pages;
 
 use App\Filament\Resources\PoReceiveResource;
 use App\Filament\Traits\HasCancelAction;
+use App\Models\Bill;
 use App\Models\PurchaseOrder;
 use Filament\Actions;
 use Filament\Actions\Action;
@@ -24,7 +25,10 @@ class ViewPoReceive extends ViewRecord
     {
         return [
             Action::make('Convert to Bill')
-                    ->url(fn (): string => route('filament.admin.resources.bills.create',['receipt'=>$this->record->id])),
+                    ->url(fn (): string => route('filament.admin.resources.bills.create',['receipt'=>$this->record->id]))
+                    ->hidden(function(){
+                        return Bill::where('receipt_id',$this->record->id)->exists();
+                    }),
             $this->getCancelFormAction()
             // Actions\EditAction::make(),
         ];

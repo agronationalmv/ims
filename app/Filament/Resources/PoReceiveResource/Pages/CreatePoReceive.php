@@ -28,6 +28,7 @@ class CreatePoReceive extends CreateRecord
     protected function afterFill(){
         if($this->purchaseOrder){
             $this->data['purchase_order_id']=$this->purchaseOrder?->id;
+            $this->data['supplier_id']=$this->purchaseOrder?->supplier_id;
             $this->data['items']=$this->purchaseOrder->items->map(function($item){
                 $item->qty=$item->balance;
                 return $item;
@@ -42,9 +43,9 @@ class CreatePoReceive extends CreateRecord
     {
         $data['received_by_id']=auth()->id();
 
-        if(isset($data['purchase_order_id'])){
-            $po=PurchaseOrder::find($data['purchase_order_id']);
-            $data['supplier_id']=$po->supplier_id;
+        if($this->purchaseOrder){
+            $data['purchase_order_id']=$this->purchaseOrder?->id;
+            $data['supplier_id']=$this->purchaseOrder?->supplier_id;
         }
         return $data;
     }

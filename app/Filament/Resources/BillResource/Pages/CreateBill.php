@@ -25,11 +25,27 @@ class CreateBill extends CreateRecord
             $this->data['receipt_id']=$this->receipt?->id;
             $this->data['supplier_id']=$this->receipt?->supplier_id;
             $this->data['items']=$this->receipt->items()->with('product','product.unit')->get()->toArray();
-
         }
-
     }
 
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if($this->receipt){
+            $data['receipt_id']=$this->receipt?->id;
+            $data['purchase_order_id']=$this->receipt?->purchase_order_id;
+            $data['supplier_id']=$this->receipt?->supplier_id;
+        }  
+        $data['subtotal']=0;
+        $data['total_gst']=0;
+        $data['total']=0;
+
+        foreach($data['items'] as $itemLine){
+            $data['subtotal']+=$itemLine->price*$itemLine->qty;
+            $data['total_gst']+=$itemLine->gst_rate*$itemLine->price;
+            $data['total']+=($itemLine->gst_rate+1)*$itemLine->price*$itemLine->qty;
+        }
+        return $data; 
+    }
     protected function afterCreate() : void {
         $productService=app(ProductService::class);
         foreach($this->record->items as $item){

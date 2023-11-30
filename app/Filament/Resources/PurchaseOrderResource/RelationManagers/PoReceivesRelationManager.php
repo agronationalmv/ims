@@ -69,11 +69,6 @@ class PoReceivesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('reference_no')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('supplier.name'),
-                Tables\Columns\TextColumn::make('net_total')
-                    ->numeric($decimalPlaces = 2)
-                    ->prefix('MVR '),
-                Tables\Columns\TextColumn::make('status')
-                    ->badge(PurchaseOrderStatus::class),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

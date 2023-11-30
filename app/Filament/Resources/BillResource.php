@@ -133,7 +133,6 @@ class BillResource extends Resource
                             'md' => 5,
                         ]),
                     Forms\Components\Hidden::make('product_id'),
-                    Forms\Components\Hidden::make('supplier_id'),
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
                         ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
@@ -203,6 +202,11 @@ class BillResource extends Resource
                 ->relationship('supplier', 'name')
                 ->disabled()
                 ->required(),
+            Forms\Components\Placeholder::make('Purchase Order')
+                ->content(fn(Component $livewire)=>$livewire->record->purchase_order->reference_no)
+                ->disabled()
+                ->visible(fn(string $operation)=>$operation=='view')
+
         ]; 
     }
 
