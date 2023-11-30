@@ -35,8 +35,14 @@ class ProductResource extends Resource
                         ->required()
                         ->numeric()
                         ->default(0.00),
+                    Forms\Components\TextInput::make('init_qty')
+                        ->label('Initial Qty')
+                        ->numeric()
+                        ->default(0.00),
                     Forms\Components\TextInput::make('qty')
+                        ->label('Qty On Hand')
                         ->required()
+                        ->disabled()
                         ->numeric()
                         ->default(0.00),
                     Forms\Components\TextInput::make('price')
@@ -66,6 +72,7 @@ class ProductResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('qty')
+                    ->label('Qty On Hand')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price')

@@ -17,21 +17,6 @@ class CreatePurchaseOrder extends CreateRecord
 
     protected static string $resource = PurchaseOrderResource::class;
 
-
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $data['subtotal']=0;
-        $data['total_gst']=0;
-        $data['total']=0;
-
-        foreach($data['items'] as $itemLine){
-            $data['subtotal']+=$itemLine->price*$itemLine->qty;
-            $data['total_gst']+=$itemLine->gst_rate*$itemLine->price;
-            $data['total']+=($itemLine->gst_rate+1)*$itemLine->price*$itemLine->qty;
-        }
-        return $data; 
-    }
-
     protected function afterCreate(): void
     {
         $purchaseOrderService=app(PurchaseOrderService::class);

@@ -12,7 +12,7 @@ class ProductService{
 
     public function updateProductBalance($product){
         $product->update([
-            'qty'=>$this->getProductBalance($product)
+            'qty'=>$product->init_qty+$this->getProductBalance($product)
         ]);
     }
 

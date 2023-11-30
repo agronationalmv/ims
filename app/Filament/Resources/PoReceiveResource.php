@@ -44,24 +44,6 @@ class PoReceiveResource extends Resource
                             ->schema(static::getFormSchema('items')),
                     ])
                     ->columnSpan(['lg' => fn (?string $operation) => $operation == 'view' ? 2 : 3]),
-
-                Forms\Components\Section::make()
-                    ->schema([
-                        Forms\Components\Placeholder::make('subtotal')
-                            ->label('Subtotal')
-                            ->content(fn (?PoReceive $record): ?string => $record->subtotal),
-
-                        Forms\Components\Placeholder::make('total_gst')
-                            ->label('GST')
-                            ->content(fn (?PoReceive $record): ?string => $record->total_gst),
-
-                        Forms\Components\Placeholder::make('net_total')
-                            ->label('Total')
-                            ->content(fn (?PoReceive $record): ?string => $record->net_total)
-
-                    ])
-                    ->columnSpan(['lg' => 1])
-                    ->hidden(fn (?string $operation) => $operation != 'view'),
             ])
             ->columns(3);
     }

@@ -35,24 +35,24 @@ class CreateBill extends CreateRecord
             $data['purchase_order_id']=$this->receipt?->purchase_order_id;
             $data['supplier_id']=$this->receipt?->supplier_id;
         }  
-        $data['subtotal']=0;
-        $data['total_gst']=0;
-        $data['total']=0;
 
-        foreach($data['items'] as $itemLine){
-            $data['subtotal']+=$itemLine->price*$itemLine->qty;
-            $data['total_gst']+=$itemLine->gst_rate*$itemLine->price;
-            $data['total']+=($itemLine->gst_rate+1)*$itemLine->price*$itemLine->qty;
-        }
         return $data; 
     }
     protected function afterCreate() : void {
         $productService=app(ProductService::class);
+        $this->record->subtotal=0;
+        $this->record->total_gst=0;
+        $this->record->net_total=0;
+
         foreach($this->record->items as $item){
             $product=$item->product;
             $product->price=$productService->average_price($product);
             $product->save();
+            $this->record->subtotal=$item->qty*$item->price;
+            $this->record->total_gst=$item->gst_rate*$item->price;
+            $this->record->net_total=$item->qty*$item->price*(1+$item->gst_rate);
         }
+        $this->record->save();
     }
 
 }
