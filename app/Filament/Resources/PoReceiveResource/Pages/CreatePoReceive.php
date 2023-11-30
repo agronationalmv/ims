@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PoReceiveResource\Pages;
 
+use App\Filament\Enum\PurchaseOrderStatus;
 use App\Filament\Resources\PoReceiveResource;
 use App\Jobs\ProductBalanceUpdateJob;
 use App\Models\PoReceive;
@@ -59,6 +60,17 @@ class CreatePoReceive extends CreateRecord
             ]);
         }
         return $this->getResource()::getUrl('view',['record'=>$this->record]);
+    }
+
+    protected function afterCreate(){
+        $balance=$this->record->purchase_order->items->reduce(function($carry,$item){
+                        return $carry+$item->balance;
+                    },0);
+        if($balance<=0){
+            $this->record->purchase_order->status = PurchaseOrderStatus::Completed;
+            $this->record->purchase_order->save();
+        }
+        
     }
 
 }

@@ -81,9 +81,9 @@ class PoReceivesRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\Action::make('New Receipt')
                     ->url(fn (): string => route('filament.admin.resources.po-receives.create',['purchaseOrder'=>$this->ownerRecord->id]))
-                    // ->visible(function(RelationManager $livewire){
-                    //     return $livewire->ownerRecord->status==PurchaseOrderStatus::Approved;
-                    // })
+                    ->visible(function(RelationManager $livewire){
+                        return $livewire->ownerRecord->status==PurchaseOrderStatus::Approved;
+                    })
                     // ->mutateFormDataUsing(function (array $data): array {
                     //     $po = $this->ownerRecord;
                     //     $data['received_by_id'] = auth()->id();

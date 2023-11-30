@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('total_discount')->default(0);
             $table->decimal('total_gst')->default(0);
             $table->decimal('net_total')->default(0);
-            $table->string('status')->default(PurchaseOrderStatus::Draft);
+            $table->string('status')->default(PurchaseOrderStatus::Approved);
             $table->timestamps();
         });
     }
