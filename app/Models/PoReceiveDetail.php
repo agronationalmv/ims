@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Contracts\TransactionableModel;
 use App\Models\Enums\TransactionTypeEnum;
+use App\Services\ProductService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,13 @@ class PoReceiveDetail extends TransactionableModel
     public function getTransactionType()
     {
         return TransactionTypeEnum::In->value;
+    }
+
+    protected static function boot(){
+        parent::boot();
+        self::created(function($model){
+            app(ProductService::class)->updateProductBalance($model->product);
+        });
     }
 
 }

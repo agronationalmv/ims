@@ -21,6 +21,10 @@ class Bill extends Model
     public function supplier() : BelongsTo {
         return $this->belongsTo(Supplier::class);
     }
+
+    public function receipt() : BelongsTo {
+        return $this->belongsTo(PoReceive::class,'receipt_id');
+    }
     
     public function items() : HasMany {
         return $this->hasMany(BillDetail::class);

@@ -18,8 +18,10 @@ class PurchaseOrderDetail extends Model
 
     public function getReceivedAttribute(){
         return PoReceiveDetail::whereHas('po_receive',function($q){
-            $q->where('purchase_order_id',$this->purchase_order_id);
-        })->sum('qty');
+                                    $q->where('purchase_order_id',$this->purchase_order_id);
+                                })
+                                ->where('product_id',$this->product_id)
+                                ->sum('qty');
     }
 
     public function product() : BelongsTo {

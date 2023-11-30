@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('bills', function (Blueprint $table) {
             $table->id();
             $table->string('reference_no')->nullable();
+            $table->foreignId('receipt_id')->nullable();
             $table->string('bill_date')->nullable();
             $table->foreignIdFor(Supplier::class)->nullable();
             $table->decimal('subtotal')->default(0);

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Models\Contracts\TransactionableModel;
 use App\Models\Enums\TransactionTypeEnum;
+use App\Services\ProductService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Log;
 
 class AdjustmentDetail extends TransactionableModel
 {
@@ -30,6 +32,13 @@ class AdjustmentDetail extends TransactionableModel
 
     public function adjustment_type() : BelongsTo {
         return $this->belongsTo(AdjustmentType::class);
+    }
+
+    protected static function boot(){
+        parent::boot();
+        self::created(function($model){
+            app(ProductService::class)->updateProductBalance($model->product);
+        });
     }
 
 }

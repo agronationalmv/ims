@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PoReceiveResource\Pages;
 
 use App\Filament\Resources\PoReceiveResource;
+use App\Jobs\ProductBalanceUpdateJob;
 use App\Models\PoReceive;
 use App\Models\PurchaseOrder;
 use App\Models\Transaction;
@@ -39,18 +40,13 @@ class CreatePoReceive extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $po=PurchaseOrder::find($data['purchase_order_id']);
         $data['received_by_id']=auth()->id();
-        $data['supplier_id']=$po->supplier_id;
-        return $data;
-    }
-    protected function afterCreate(): void
-    {
-        foreach($this->record->items as $item){
-            $product=$item->product;
-            $product->qty=$this->product_balance($product);
-            $product->save();
+
+        if(isset($data['purchase_order_id'])){
+            $po=PurchaseOrder::find($data['purchase_order_id']);
+            $data['supplier_id']=$po->supplier_id;
         }
+        return $data;
     }
 
     protected function getRedirectUrl(): string
@@ -64,29 +60,4 @@ class CreatePoReceive extends CreateRecord
         return $this->getResource()::getUrl('view',['record'=>$this->record]);
     }
 
-    public function product_balance($product) {
-        $in=Transaction::where('product_id',$product->id)->where('transaction_type','in')->sum('qty');
-        $out=Transaction::where('product_id',$product->id)->where('transaction_type','out')->sum('qty');
-        return $in-$out;
-    }
-
-    // protected function getSteps(): array
-    // {
-    //     return [
-    //         Step::make('Details')
-    //             ->schema([
-    //                 Section::make()->schema(PoReceiveResource::getFormSchema())->columns(),
-    //             ])
-    //             ->afterValidation(function (Component $livewire) {
-    //                 $this->data['items']=$livewire->purchaseOrder->items->map(function($item){
-    //                     return ["product_id"=>$item->product_id,"qty"=>$item->qty];
-    //                 })->toArray();
-    //             }),
-
-    //         Step::make('Items')
-    //             ->schema([
-    //                 Section::make()->schema(PoReceiveResource::getFormSchema('items')),
-    //             ]),
-    //     ];
-    // }
 }

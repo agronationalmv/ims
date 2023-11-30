@@ -23,7 +23,7 @@ class PoReceiveResource extends Resource
 
     protected static ?string $model = PoReceive::class;
 
-    protected ?PurchaseOrder $purchaseOrder;
+    protected ?PurchaseOrder $purchaseOrder = null;
 
     protected static ?string $modelLabel = 'Item Receipt';
     protected static ?string $pluralModelLabel = 'Item Receipts';
@@ -40,10 +40,10 @@ class PoReceiveResource extends Resource
                             ->schema(static::getFormSchema())
                             ->columns(2),
 
-                        Forms\Components\Section::make('Items')
+                        Forms\Components\Section::make()
                             ->schema(static::getFormSchema('items')),
                     ])
-                    ->columnSpan(['lg' => fn (?string $operation) => $operation=='view'?2:3]),
+                    ->columnSpan(['lg' => fn (?string $operation) => $operation == 'view' ? 2 : 3]),
 
                 Forms\Components\Section::make()
                     ->schema([
@@ -61,7 +61,7 @@ class PoReceiveResource extends Resource
 
                     ])
                     ->columnSpan(['lg' => 1])
-                    ->hidden(fn (?string $operation) => $operation!='view'),
+                    ->hidden(fn (?string $operation) => $operation != 'view'),
             ])
             ->columns(3);
     }
@@ -71,7 +71,7 @@ class PoReceiveResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('reference_no')
-                ->searchable(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('purchase_order.reference_no')
                     ->numeric()
                     ->sortable(),
@@ -123,80 +123,43 @@ class PoReceiveResource extends Resource
 
     public static function getFormSchema(string $section = null): array
     {
-        if($section=='items'){
+        if ($section == 'items') {
             return [
                 Forms\Components\Repeater::make('items')
-                ->relationship()
-                ->schema([
-                    Forms\Components\Select::make('product_id')
-                        ->label('Product')
-                        ->options(Product::query()->pluck('name', 'id'))
-                        ->required()
-                        ->live()
-                        ->afterStateUpdated(function($state, Forms\Set $set){
-                            $product=Product::find($state);
-                            $set('price', $product?->price ?? 0);
-                            $set('gst_rate', $product?->gst_rate ?? 0);
-                            $set('total', ($product?->price*$product?->qty*(1+$product?->gst_rate)) ?? 0);
-                        })
-                        ->columnSpan([
-                            'md' => 5,
-                        ])
-                        ->searchable(),
+                    ->relationship()
+                    ->schema([
+                        Forms\Components\Select::make('product_id')
+                            ->label('Product')
+                            ->options(Product::query()->pluck('name', 'id'))
+                            ->required()
+                            ->columnSpan([
+                                'md' => 5,
+                            ])
+                            ->searchable(),
 
-                    Forms\Components\TextInput::make('qty')
-                        ->label('Quantity')
-                        ->live(debounce: 500)
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                        })
-                        ->numeric($decimalPlaces=2)
-                        ->default(1)
-                        ->columnSpan([
-                            'md' => 2,
-                        ])
-                        ->required(),
-
-                    Forms\Components\TextInput::make('price')
-                        ->label('Price')
-                        ->live(debounce: 500)
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                        })
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 3,
-                        ]),
-                    Forms\Components\TextInput::make('gst_rate')
-                        ->label('GST Rate')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=3)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
-                    Forms\Components\TextInput::make('total')
-                        ->label('Subtotal')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
-                ])
-                ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                    $data['total']=$data['price']*$data['qty']*(1+$data['gst_rate']);
-                    return $data;
-                })
-                ->defaultItems(1)
-                ->columns([
-                    'md' => 10,
-                ])
-                ->required()
+                        Forms\Components\TextInput::make('qty')
+                            ->label('Quantity')
+                            ->numeric($decimalPlaces = 2)
+                            ->default(1)
+                            ->gt(0)
+                            ->columnSpan([
+                                'md' => 2,
+                            ])
+                            ->required()
+                    ])
+                    ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                        $product = Product::find($data['product_id']);
+                        $price = floatVal($product?->price);
+                        $qty = floatVal($data['qty']);
+                        $data['price'] = $price;
+                        $data['total'] = $price * $qty;
+                        return $data;
+                    })
+                    ->defaultItems(1)
+                    ->columns([
+                        'md' => 10,
+                    ])
+                    ->required()
             ];
         }
 
@@ -206,21 +169,34 @@ class PoReceiveResource extends Resource
             Forms\Components\Select::make('purchase_order_id')
                 ->relationship('purchase_order', 'reference_no')
                 ->searchable()
-                ->required(),
+                ->disabled(fn (Component $livewire) => $livewire?->purchaseOrder?->id != null),
+            Forms\Components\Select::make('supplier_id')
+                ->relationship('supplier', 'name')
+                ->searchable()
+                ->required()
+                ->disabled(fn (Component $livewire) => $livewire?->purchaseOrder?->id != null)
+                ->createOptionForm([
+                    Forms\Components\TextInput::make('name')
+                        ->required(),
+                    Forms\Components\TextInput::make('gst_tin_no'),
+                ])
+                ->createOptionAction(function (Forms\Components\Actions\Action $action) {
+                    return $action
+                        ->modalHeading('Create Supplier')
+                        ->modalWidth('lg');
+                }),
             Forms\Components\DatePicker::make('receipt_date')
                 ->format('Y-m-d')
                 ->native(false)
                 ->default(now())
                 ->required(),
-        ]; 
+        ];
     }
 
 
     public static function shouldRegisterNavigation(): bool
     {
         return true;
-        return auth()->user()->role=='admin';
+        return auth()->user()->role == 'admin';
     }
-
-    
 }

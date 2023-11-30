@@ -37,7 +37,7 @@ class BillResource extends Resource
                             ->schema(static::getFormSchema())
                             ->columns(2),
 
-                        Forms\Components\Section::make('Items')
+                        Forms\Components\Section::make()
                             ->schema(static::getFormSchema('items')),
                     ])
                     ->columnSpan(['lg' => 2]),
@@ -109,7 +109,7 @@ class BillResource extends Resource
     {
         return [
             'index' => Pages\ListBills::route('/'),
-            'create' => Pages\CreateBill::route('/create'),
+            'create' => Pages\CreateBill::route('/create/{receipt}'),
             'view' => Pages\ViewBill::route('/{record}'),
             'edit' => Pages\EditBill::route('/{record}/edit'),
         ];
@@ -124,29 +124,23 @@ class BillResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('product_id')
                         ->label('Product')
-                        ->options(Product::query()->pluck('name', 'id'))
+                        ->relationship('product','name')
+                        ->live(debounce: 500)
                         ->required()
-                        ->live()
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $product=Product::find($get('product_id'));
-                            $set('price',$product->price);
-                            $set('gst_rate',$product->gst_rate);
-                            $set('qty',0);
-                            $set('total', round(($product->price*(1+$product->gst_rate)) ?? 0,2));
-                        })
+                        ->dehydrated()
+                        ->disabled()
                         ->columnSpan([
                             'md' => 5,
-                        ])
-                        ->searchable(),
-
+                        ]),
+                    Forms\Components\Hidden::make('product_id'),
+                    Forms\Components\Hidden::make('supplier_id'),
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
                         ->live(debounce: 500)
                         ->numeric($decimalPlaces=2)
-                        ->default(0)
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                        })
+                        ->disabled(true)
+                        ->dehydrated()
+                        ->gt(0)
                         ->columnSpan([
                             'md' => 2,
                         ])
@@ -187,7 +181,8 @@ class BillResource extends Resource
                 ->columns([
                     'md' => 10,
                 ])
-                ->live()
+                ->deletable(false)
+                ->addable(false)
                 ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                     self::updateTotals($get,$set);
                 })
@@ -205,19 +200,8 @@ class BillResource extends Resource
                 ->required(),
             Forms\Components\Select::make('supplier_id')
                 ->relationship('supplier', 'name')
-                ->searchable()
-                ->required()
-                ->createOptionForm([
-                    Forms\Components\TextInput::make('name')
-                        ->required(),
-                    Forms\Components\TextInput::make('gst_tin_no'),
-                    Forms\Components\TextInput::make('address')
-                ])
-                ->createOptionAction(function (Forms\Components\Actions\Action $action) {
-                    return $action
-                        ->modalHeading('Create customer')
-                        ->modalWidth('lg');
-                }),
+                ->disabled()
+                ->required(),
         ]; 
     }
 
@@ -226,8 +210,6 @@ class BillResource extends Resource
     {
         // Retrieve all selected products and remove empty rows
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['qty']));
-    
-
         // Calculate subtotal based on the selected products and quantities
         $subtotal = $selectedProducts->reduce(function ($subtotal, $product) {
             return $subtotal + ($product['price'] * $product['qty']);

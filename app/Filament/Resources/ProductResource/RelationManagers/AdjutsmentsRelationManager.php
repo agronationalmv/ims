@@ -65,11 +65,6 @@ class AdjutsmentsRelationManager extends RelationManager
                         $total = $price * 1;
                         $data['total']=$total;
                         return $data;
-                    })
-                    ->after(function(){
-                        $product=$this->ownerRecord;
-                        $product->qty=$this->product_balance($product);
-                        $product->save();
                     }),
             ])
             ->actions([
@@ -88,9 +83,4 @@ class AdjutsmentsRelationManager extends RelationManager
         return false;
     }
 
-    public function product_balance($product) {
-        $in=Transaction::where('product_id',$product->id)->where('transaction_type','in')->sum('qty');
-        $out=Transaction::where('product_id',$product->id)->where('transaction_type','out')->sum('qty');
-        return $in-$out;
-    }
 }

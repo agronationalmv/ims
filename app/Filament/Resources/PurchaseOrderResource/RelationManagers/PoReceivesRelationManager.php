@@ -36,7 +36,7 @@ class PoReceivesRelationManager extends RelationManager
                             ->schema(static::getMainFormSchema())
                             ->columns(2),
 
-                        Forms\Components\Section::make('Items')
+                        Forms\Components\Section::make()
                             ->schema(static::getMainFormSchema('items')),
                     ])
                     ->columnSpan(['lg' => fn (?string $operation) => $operation == 'view' ? 2 : 3]),

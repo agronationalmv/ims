@@ -30,7 +30,7 @@ class OrderResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Items')
+                Forms\Components\Section::make()
                     ->schema(static::getFormSchema('items'))
                     ->columnSpan(['lg' => 2]),
                 Forms\Components\Group::make()
@@ -127,12 +127,9 @@ class OrderResource extends Resource
                         ->searchable(),
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
-                        ->live(debounce: 500)
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')) ?? 0,2));
-                        })
                         ->numeric($decimalPlaces=2)
                         ->default(1)
+                        ->gt(0)
                         ->columnSpan([
                             'md' => 2,
                         ])

@@ -36,7 +36,7 @@ class PurchaseOrderResource extends Resource
                             ->schema(static::getFormSchema())
                             ->columns(2),
 
-                        Forms\Components\Section::make('Items')
+                        Forms\Components\Section::make()
                             ->schema(static::getFormSchema('items')),
                     ])
                     ->columnSpan(['lg' => 2]),
@@ -153,6 +153,7 @@ class PurchaseOrderResource extends Resource
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                             $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
                         })
+                        ->gt(0)
                         ->numeric($decimalPlaces=2)
                         ->default(1)
                         ->columnSpan([
@@ -221,7 +222,7 @@ class PurchaseOrderResource extends Resource
                 ])
                 ->createOptionAction(function (Forms\Components\Actions\Action $action) {
                     return $action
-                        ->modalHeading('Create customer')
+                        ->modalHeading('Create Supplier')
                         ->modalWidth('lg');
                 }),
         ]; 
