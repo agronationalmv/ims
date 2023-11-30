@@ -132,6 +132,12 @@ class PoReceiveResource extends Resource
                             ->label('Product')
                             ->options(Product::query()->pluck('name', 'id'))
                             ->required()
+                            ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                                $product=Product::find($get('product_id'));
+                                $product->unit;
+                                $set('product',$product);
+                            })
+                            ->live()
                             ->columnSpan([
                                 'md' => 5,
                             ])
@@ -139,6 +145,7 @@ class PoReceiveResource extends Resource
 
                         Forms\Components\TextInput::make('qty')
                             ->label('Quantity')
+                            ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
                             ->numeric($decimalPlaces = 2)
                             ->default(1)
                             ->gt(0)

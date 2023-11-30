@@ -15,6 +15,9 @@ class EditPurchaseOrder extends EditRecord
         $purchaseOrderService=app(PurchaseOrderService::class);
         $purchaseOrderService->updateTotal($this->record);
     }
+    protected function afterFill(){
+        $this->data['items']=$this->record->items()->with('product','product.unit')->get()->toArray();
+    }
     protected function getHeaderActions(): array
     {
         return [

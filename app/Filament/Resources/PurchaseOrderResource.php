@@ -141,6 +141,8 @@ class PurchaseOrderResource extends Resource
                             $set('gst_rate', $gst_rate);
                             $total=$price*(1+$gst_rate);
                             $set('total', $total);
+                            $product->unit;
+                            $set('product',$product);
                         })
                         ->columnSpan([
                             'md' => 5,
@@ -149,6 +151,7 @@ class PurchaseOrderResource extends Resource
 
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
+                        ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
                         ->live(debounce: 500)
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                             $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));

@@ -119,6 +119,11 @@ class OrderResource extends Resource
                     Forms\Components\Select::make('product_id')
                         ->label('Product')
                         ->options(Product::query()->pluck('name', 'id'))
+                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                            $product=Product::find($get('product_id'));
+                            $product->unit;
+                            $set('product',$product);
+                        })
                         ->required()
                         ->live()
                         ->columnSpan([
@@ -127,6 +132,7 @@ class OrderResource extends Resource
                         ->searchable(),
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
+                        ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
                         ->numeric($decimalPlaces=2)
                         ->default(1)
                         ->gt(0)

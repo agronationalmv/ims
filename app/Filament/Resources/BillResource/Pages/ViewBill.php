@@ -16,4 +16,8 @@ class ViewBill extends ViewRecord
             Actions\EditAction::make(),
         ];
     }
+
+    protected function afterFill(){
+        $this->data['items']=$this->record->items()->with('product','product.unit')->get()->toArray();
+    }
 }

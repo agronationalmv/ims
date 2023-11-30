@@ -136,6 +136,7 @@ class BillResource extends Resource
                     Forms\Components\Hidden::make('supplier_id'),
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
+                        ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
                         ->live(debounce: 500)
                         ->numeric($decimalPlaces=2)
                         ->disabled(true)

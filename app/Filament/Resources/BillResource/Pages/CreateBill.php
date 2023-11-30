@@ -24,10 +24,12 @@ class CreateBill extends CreateRecord
         if($this->receipt){
             $this->data['receipt_id']=$this->receipt?->id;
             $this->data['supplier_id']=$this->receipt?->supplier_id;
-            $this->data['items']=$this->receipt->items->toArray();
+            $this->data['items']=$this->receipt->items()->with('product','product.unit')->get()->toArray();
+
         }
 
     }
+
     protected function afterCreate() : void {
         $productService=app(ProductService::class);
         foreach($this->record->items as $item){

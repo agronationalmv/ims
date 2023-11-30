@@ -22,6 +22,9 @@ class ViewPurchaseOrder extends ViewRecord
         ],$this->getStatusActions());
     }
 
+    protected function afterFill(){
+        $this->data['items']=$this->record->items()->with('product','product.unit')->get()->toArray();
+    }
     private function getStatusActions(){
         $actions=[];
         foreach($this->record->status->getActions() as $label=>$status){

@@ -17,4 +17,8 @@ class EditOrder extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function afterFill(){
+        $this->data['items']=$this->record->items()->with('product','product.unit')->get()->toArray();
+    }
 }
