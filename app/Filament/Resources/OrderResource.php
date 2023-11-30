@@ -156,7 +156,8 @@ class OrderResource extends Resource
 
         return [
             Forms\Components\TextInput::make('reference_no')
-                ->maxLength(255),
+                ->disabled()
+                ->visible(fn(?string $operation)=>$operation=='view'),
             Forms\Components\DatePicker::make('order_date')
                 ->format('Y-m-d')
                 ->native(false)

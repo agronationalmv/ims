@@ -11,6 +11,9 @@ class CreateOrder extends CreateRecord
 {
     protected static string $resource = OrderResource::class;
 
+    protected function afterFill(){
+        $this->data['requested_by_id']=auth()->id();
+    }
     protected function afterCreate(): void
     {
         foreach($this->record->items as $item){
