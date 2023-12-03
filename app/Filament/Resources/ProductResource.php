@@ -66,10 +66,14 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('qty')
-                    ->label('Qty On Hand')
+                    ->label('On Hand')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('unit.name')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Price')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
