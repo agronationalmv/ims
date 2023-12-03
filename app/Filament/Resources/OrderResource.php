@@ -7,6 +7,7 @@ use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,8 +22,8 @@ class OrderResource extends Resource
 
     protected static ?string $model = Order::class;
 
-    protected static ?string $modelLabel = 'Consumption';
-    protected static ?string $pluralModelLabel = 'Consumptions';
+    protected static ?string $modelLabel = 'Stock Issue';
+    protected static ?string $pluralModelLabel = 'Stock Issues';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -37,19 +38,7 @@ class OrderResource extends Resource
                     ->schema([
                         Forms\Components\Section::make()
                             ->schema(static::getFormSchema())
-                            ->columns(1),
-                            Forms\Components\Section::make()
-                            ->schema([
-                                Forms\Components\Placeholder::make('updated_at')
-                                    ->label('Updated On')
-                                    ->content(fn (?Order $record): ?string => $record?->updated_at),
-        
-                                Forms\Components\Placeholder::make('created_at')
-                                    ->label('Created On')
-                                    ->content(fn (?Order $record): ?string => $record?->created_at)
-        
-                            ])
-                            ->hidden(fn (?string $operation) => $operation=='create'),
+                            ->columns(1)
                     ])
                     ->columnSpan(['lg' => 1])
 
@@ -133,8 +122,24 @@ class OrderResource extends Resource
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
                         ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
+                        ->suffix(fn(Forms\Get $get)=>$get('product.qty'))
                         ->numeric($decimalPlaces=2)
                         ->default(1)
+                        ->rules([
+                            fn (Forms\Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                $product=$get('product');
+                                if(!$product && $get('product_id')){
+                                    $product=Product::find($get('product_id'));
+                                }
+
+                                if($product){
+                                    if($value>floatval($product->qty)){
+                                        $fail("The quantity must be less than or equal to {$product->qty}");
+                                    }
+                                }
+
+                            },
+                        ])
                         ->gt(0)
                         ->columnSpan([
                             'md' => 2,

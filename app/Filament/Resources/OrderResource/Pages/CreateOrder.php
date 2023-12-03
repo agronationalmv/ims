@@ -13,6 +13,7 @@ use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 class CreateOrder extends CreateRecord
 {
     protected static string $resource = OrderResource::class;
+    protected static bool $canCreateAnother=false;
 
     protected function afterFill(){
         $this->data['requested_by_id']=auth()->id();
