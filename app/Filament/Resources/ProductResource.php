@@ -65,26 +65,13 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('unit.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('min_qty')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('qty')
                     ->label('Qty On Hand')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('price')
-                    ->money()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('gst_rate')
+                Tables\Columns\TextColumn::make('unit.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
