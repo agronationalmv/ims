@@ -130,7 +130,12 @@ class PurchaseOrderResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('product_id')
                         ->label('Product')
-                        ->options(Product::query()->pluck('name', 'id'))
+                        ->options(function(Forms\Get $get){
+                            return Product::query()->whereHas('stores',function($q)use($get){
+                                $q->where('store_id',$get('../../store_id'));
+                            })->pluck('name', 'id');
+
+                        })
                         ->required()
                         ->live()
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
@@ -141,7 +146,7 @@ class PurchaseOrderResource extends Resource
                             $set('gst_rate', $gst_rate);
                             $total=$price*(1+$gst_rate);
                             $set('total', $total);
-                            $product->unit;
+                            $product?->unit;
                             $set('product',$product);
                         })
                         ->columnSpan([
@@ -214,6 +219,10 @@ class PurchaseOrderResource extends Resource
         return [
             Forms\Components\TextInput::make('reference_no')
                 ->required(),
+            Forms\Components\Select::make('store_id')
+                ->relationship('store', 'name')
+                ->required()
+                ->live(),
             Forms\Components\Select::make('supplier_id')
                 ->relationship('supplier', 'name')
                 ->searchable()

@@ -31,29 +31,13 @@ class ProductResource extends Resource
                     Forms\Components\Select::make('unit_id')
                         ->relationship('unit', 'name')
                         ->required(),
-                    Forms\Components\TextInput::make('min_qty')
-                        ->required()
-                        ->numeric()
-                        ->default(0.00),
-                    Forms\Components\TextInput::make('init_qty')
-                        ->label('Initial Qty')
-                        ->numeric()
-                        ->default(0.00),
-                    Forms\Components\TextInput::make('qty')
-                        ->label('Qty On Hand')
-                        ->required()
-                        ->disabled()
-                        ->numeric()
-                        ->default(0.00),
                     Forms\Components\TextInput::make('price')
                         ->required()
                         ->numeric()
                         ->default(0.00)
                         ->prefix('$'),
-                    Forms\Components\TextInput::make('gst_rate')
-                        ->required()
-                        ->numeric()
-                        ->default(0.000),
+                    Forms\Components\Select::make('gst_rate')
+                        ->options(["0.08"=>"8%"]),
                 ])
                 ->columns(2)
             ]);
@@ -65,10 +49,6 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('qty')
-                    ->label('On Hand')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('unit.name')
                     ->numeric()
                     ->sortable(),

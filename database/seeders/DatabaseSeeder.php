@@ -67,5 +67,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         \App\Models\AdjustmentType::create(['name'=>'Damage']);
+
+        \App\Models\Store::create(['name'=>'Gaadhoo Food Main']);
+        \App\Models\Store::create(['name'=>'Gaadhoo Tools Main']);
+
     }
 }

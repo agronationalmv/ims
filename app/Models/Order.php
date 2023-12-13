@@ -17,6 +17,10 @@ class Order extends Model implements HasInventory
 
     protected $guarded=[];
 
+    public function store() : BelongsTo {
+        return $this->belongsTo(Store::class);
+    }
+    
     public function items() : HasMany {
         return $this->hasMany(OrderDetail::class);
     }

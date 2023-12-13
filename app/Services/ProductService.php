@@ -10,16 +10,22 @@ use App\Models\Product;
 
 class ProductService{
 
-    public function updateProductBalance($product){
-        $product->update([
-            'qty'=>$product->init_qty+$this->getProductBalance($product)
+    public function updateProductBalance($store_id,$product){
+        $product->stores()->where('store_id',$store_id)->update([
+            'qty'=>$product->init_qty+$this->getProductBalance($store_id,$product)
         ]);
     }
 
-    public function getProductBalance($product){
-        $in=PoReceiveDetail::where('product_id',$product->id)->sum('qty');
-        $out=AdjustmentDetail::where('product_id',$product->id)->sum('qty');
-        $out+=OrderDetail::where('product_id',$product->id)->sum('qty');
+    public function getProductBalance($store_id,$product){
+        $in=PoReceiveDetail::whereHas('po_receive',function($q)use($store_id){
+                                    $q->where('store_id',$store_id);
+                                })->where('product_id',$product->id)->sum('qty');
+
+        $out=AdjustmentDetail::where('store_id',$store_id)->where('product_id',$product->id)->sum('qty');
+
+        $out+=OrderDetail::whereHas('order',function($q)use($store_id){
+                                    $q->where('store_id',$store_id);
+                                })->where('product_id',$product->id)->sum('qty');
         return $in-$out;
     }
 

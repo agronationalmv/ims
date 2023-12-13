@@ -57,6 +57,9 @@ class PoReceiveResource extends Resource
                 Tables\Columns\TextColumn::make('supplier.name')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('store.name')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('purchase_order.reference_no')
                     ->numeric()
                     ->sortable(),
@@ -112,8 +115,12 @@ class PoReceiveResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('product_id')
                             ->label('Product')
-                            ->options(Product::query()->pluck('name', 'id'))
-                            ->required()
+                            ->options(function(Forms\Get $get){
+                                return Product::query()->whereHas('stores',function($q)use($get){
+                                    $q->where('store_id',$get('../../store_id'));
+                                })->pluck('name', 'id');
+    
+                            })->required()
                             ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                                 $product=Product::find($get('product_id'));
                                 $product->unit;
@@ -158,6 +165,11 @@ class PoReceiveResource extends Resource
             Forms\Components\Select::make('purchase_order_id')
                 ->relationship('purchase_order', 'reference_no')
                 ->searchable()
+                ->disabled(fn (Component $livewire) => $livewire?->purchaseOrder?->id != null),
+            Forms\Components\Select::make('store_id')
+                ->relationship('store', 'name')
+                ->required()
+                ->live()
                 ->disabled(fn (Component $livewire) => $livewire?->purchaseOrder?->id != null),
             Forms\Components\Select::make('supplier_id')
                 ->relationship('supplier', 'name')

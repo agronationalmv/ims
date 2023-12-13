@@ -33,4 +33,8 @@ class Product extends Model
     public function adjutsments() : HasMany {
         return $this->hasMany(AdjustmentDetail::class,'product_id');
     }
+
+    public function stores(){
+        return $this->hasMany(ProductStore::class);
+    }
 }

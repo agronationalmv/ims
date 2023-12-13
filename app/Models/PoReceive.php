@@ -19,6 +19,10 @@ class PoReceive extends Model implements HasInventory
         return  $this->belongsTo(PurchaseOrder::class);
     }
 
+    public function store() : BelongsTo {
+        return $this->belongsTo(Store::class);
+    }
+
     public function items() : HasMany {
         return $this->hasMany(PoReceiveDetail::class);
     }

@@ -19,6 +19,10 @@ class OrderDetail extends TransactionableModel
         return $this->belongsTo(Product::class);
     }
 
+    public function order() : BelongsTo {
+        return $this->belongsTo(Order::class);
+    }
+
     public function getTransactionType()
     {
         return TransactionTypeEnum::Out->value;
@@ -27,7 +31,7 @@ class OrderDetail extends TransactionableModel
     protected static function boot(){
         parent::boot();
         self::created(function($model){
-            app(ProductService::class)->updateProductBalance($model->product);
+            app(ProductService::class)->updateProductBalance($model->order->store_id,$model->product);
         });
     }
 }

@@ -17,9 +17,13 @@ class PurchaseOrder extends Model
     protected $casts=[
         'status'=>PurchaseOrderStatus::class
     ];
-
+  
     public function supplier() : BelongsTo {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function store() : BelongsTo {
+        return $this->belongsTo(Store::class);
     }
 
     public function items() : HasMany {

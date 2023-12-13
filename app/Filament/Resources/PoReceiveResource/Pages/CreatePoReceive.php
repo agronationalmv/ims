@@ -30,6 +30,7 @@ class CreatePoReceive extends CreateRecord
         if($this->purchaseOrder){
             $this->data['purchase_order_id']=$this->purchaseOrder?->id;
             $this->data['supplier_id']=$this->purchaseOrder?->supplier_id;
+            $this->data['store_id']=$this->purchaseOrder?->store_id;
             $this->data['items']=$this->purchaseOrder->items->map(function($item){
                 $item->qty=$item->balance;
                 return $item;
@@ -47,6 +48,7 @@ class CreatePoReceive extends CreateRecord
         if($this->purchaseOrder){
             $data['purchase_order_id']=$this->purchaseOrder?->id;
             $data['supplier_id']=$this->purchaseOrder?->supplier_id;
+            $data['store_id']=$this->purchaseOrder?->store_id;
         }
         return $data;
     }

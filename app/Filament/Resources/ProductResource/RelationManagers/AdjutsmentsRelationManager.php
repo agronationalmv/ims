@@ -23,6 +23,10 @@ class AdjutsmentsRelationManager extends RelationManager
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('store_id')
+                    ->relationship('store', 'name')
+                    ->required()
+                    ->live(),
                 Forms\Components\Select::make('adjustment_type_id')
                     ->relationship('adjustment_type', 'name')
                     ->preload(true)
@@ -47,7 +51,7 @@ class AdjutsmentsRelationManager extends RelationManager
             ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('adjustment_type.name'),
-                Tables\Columns\TextColumn::make('product.name'),
+                Tables\Columns\TextColumn::make('store.name'),
                 Tables\Columns\TextColumn::make('qty'),
                 Tables\Columns\TextColumn::make('user.name')
             ])

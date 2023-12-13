@@ -32,7 +32,7 @@ class PoReceiveDetail extends TransactionableModel
     protected static function boot(){
         parent::boot();
         self::created(function($model){
-            app(ProductService::class)->updateProductBalance($model->product);
+            app(ProductService::class)->updateProductBalance($model->po_receive->store_id,$model->product);
         });
     }
 

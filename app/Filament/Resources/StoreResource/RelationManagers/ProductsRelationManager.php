@@ -43,10 +43,7 @@ class ProductsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('qty')
                     ->numeric()
                     ->readOnly()
-                    ->default(0),
-                Forms\Components\TextInput::make('price')
-                    ->numeric()
-                    ->default(0),
+                    ->default(0)
             ]);
     }
 
@@ -57,7 +54,6 @@ class ProductsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('product.name'),
                 Tables\Columns\TextColumn::make('qty'),
-                Tables\Columns\TextColumn::make('price')
             ])
             ->filters([
                 //

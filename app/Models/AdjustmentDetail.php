@@ -21,6 +21,10 @@ class AdjustmentDetail extends TransactionableModel
         return $this->belongsTo(Product::class);
     }
 
+    public function store() : BelongsTo {
+        return $this->belongsTo(Store::class);
+    }
+
     public function getTransactionType()
     {
         return TransactionTypeEnum::Out->value;
@@ -37,7 +41,7 @@ class AdjustmentDetail extends TransactionableModel
     protected static function boot(){
         parent::boot();
         self::created(function($model){
-            app(ProductService::class)->updateProductBalance($model->product);
+            app(ProductService::class)->updateProductBalance($model->store_id,$model->product);
         });
     }
 
