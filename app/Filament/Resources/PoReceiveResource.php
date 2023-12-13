@@ -54,14 +54,14 @@ class PoReceiveResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('reference_no')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('supplier.name')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('purchase_order.reference_no')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('receipt_date')
                     ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('received_by.name')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

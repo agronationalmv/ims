@@ -63,13 +63,16 @@ class CreatePoReceive extends CreateRecord
     }
 
     protected function afterCreate(){
-        $balance=$this->record->purchase_order->items->reduce(function($carry,$item){
-                        return $carry+$item->balance;
-                    },0);
-        if($balance<=0){
-            $this->record->purchase_order->status = PurchaseOrderStatus::Completed;
-            $this->record->purchase_order->save();
+        if($this->record->purchase_order_id){
+            $balance=$this->record->purchase_order->items->reduce(function($carry,$item){
+                return $carry+$item->balance;
+            },0);
+            if($balance<=0){
+                $this->record->purchase_order->status = PurchaseOrderStatus::Completed;
+                $this->record->purchase_order->save();
+            }
         }
+
         
     }
 
