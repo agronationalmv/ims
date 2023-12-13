@@ -21,7 +21,9 @@ class ProductService{
                                     $q->where('store_id',$store_id);
                                 })->where('product_id',$product->id)->sum('qty');
 
-        $out=AdjustmentDetail::where('store_id',$store_id)->where('product_id',$product->id)->sum('qty');
+        $out=AdjustmentDetail::whereHas('inventory_adjustment',function($q)use($store_id){
+                                    $q->where('store_id',$store_id);
+                                })->where('product_id',$product->id)->sum('qty');
 
         $out+=OrderDetail::whereHas('order',function($q)use($store_id){
                                     $q->where('store_id',$store_id);

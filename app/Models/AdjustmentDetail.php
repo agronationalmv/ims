@@ -21,8 +21,8 @@ class AdjustmentDetail extends TransactionableModel
         return $this->belongsTo(Product::class);
     }
 
-    public function store() : BelongsTo {
-        return $this->belongsTo(Store::class);
+    public function inventory_adjustment() : BelongsTo {
+        return $this->belongsTo(InventoryAdjustment::class,'inventory_adjustment_id');
     }
 
     public function getTransactionType()
@@ -41,7 +41,7 @@ class AdjustmentDetail extends TransactionableModel
     protected static function boot(){
         parent::boot();
         self::created(function($model){
-            app(ProductService::class)->updateProductBalance($model->store_id,$model->product);
+            app(ProductService::class)->updateProductBalance($model->inventory_adjustment->store_id,$model->product);
         });
     }
 

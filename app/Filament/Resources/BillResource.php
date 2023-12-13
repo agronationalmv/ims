@@ -203,7 +203,7 @@ class BillResource extends Resource
                 ->disabled()
                 ->required(),
             Forms\Components\Placeholder::make('Purchase Order')
-                ->content(fn(Component $livewire)=>$livewire->record->purchase_order->reference_no)
+                ->content(fn(Component $livewire)=>$livewire->record->purchase_order?->reference_no)
                 ->disabled()
                 ->visible(fn(string $operation)=>$operation=='view')
 

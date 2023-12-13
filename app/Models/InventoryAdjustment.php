@@ -26,6 +26,10 @@ class InventoryAdjustment extends Model
         return $this->belongsTo(AdjustmentType::class);
     }
 
+    public function store() : BelongsTo {
+        return $this->belongsTo(Store::class);
+    }
+
     public function items() : HasMany {
         return $this->hasMany(AdjustmentDetail::class);
     }

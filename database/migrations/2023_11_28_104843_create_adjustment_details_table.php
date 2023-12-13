@@ -18,8 +18,7 @@ return new class extends Migration
         Schema::create('adjustment_details', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Product::class);
-            $table->foreignIdFor(User::class);
-            $table->foreignIdFor(AdjustmentType::class);
+            $table->foreignIdFor(InventoryAdjustment::class);
             $table->decimal('qty',8,3);
             $table->decimal('price')->default(0);
             $table->decimal('total')->default(0);
