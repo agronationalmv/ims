@@ -16,9 +16,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignIdFor(Unit::class);
-            $table->decimal('min_qty')->default(0);
-            $table->decimal('init_qty')->default(0);
-            $table->decimal('qty')->default(0);
+            $table->decimal('min_qty',8,3)->default(0);
+            $table->decimal('init_qty',8,3)->default(0);
+            $table->decimal('qty',8,3)->default(0);
             $table->decimal('price')->default(0);
             $table->decimal('gst_rate',6,3)->default(0);
             $table->softDeletes();

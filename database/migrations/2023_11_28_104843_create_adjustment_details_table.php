@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignIdFor(Product::class);
             $table->foreignIdFor(User::class);
             $table->foreignIdFor(AdjustmentType::class);
-            $table->decimal('qty');
+            $table->decimal('qty',8,3);
             $table->decimal('price')->default(0);
             $table->decimal('total')->default(0);
             $table->timestamps();

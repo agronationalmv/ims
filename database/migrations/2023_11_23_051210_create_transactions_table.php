@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->morphs('transactionable');
             $table->foreignIdFor(Product::class);
-            $table->decimal('qty');
+            $table->decimal('qty',8,3);
             $table->string('transaction_type');
             $table->timestamps();
         });
