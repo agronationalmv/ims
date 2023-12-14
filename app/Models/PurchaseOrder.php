@@ -17,7 +17,11 @@ class PurchaseOrder extends Model
     protected $casts=[
         'status'=>PurchaseOrderStatus::class
     ];
-  
+
+    public function purchase_request() : BelongsTo {
+        return $this->belongsTo(PurchaseRequest::class);
+    }
+
     public function supplier() : BelongsTo {
         return $this->belongsTo(Supplier::class);
     }

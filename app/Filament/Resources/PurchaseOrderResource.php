@@ -7,6 +7,9 @@ use App\Filament\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
+use App\Models\PurchaseRequestDetail;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -22,6 +25,9 @@ class PurchaseOrderResource extends Resource
     protected static ?int $navigationSort = 3;
 
     protected static ?string $model = PurchaseOrder::class;
+
+    public ?PurchaseRequest $purchaseRequest=null;
+
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -115,7 +121,7 @@ class PurchaseOrderResource extends Resource
     {
         return [
             'index' => Pages\ListPurchaseOrders::route('/'),
-            'create' => Pages\CreatePurchaseOrder::route('/create'),
+            'create' => Pages\CreatePurchaseOrder::route('/create/{purchaseRequest?}'),
             'view' => Pages\ViewPurchaseOrder::route('/{record}'),
             'edit' => Pages\EditPurchaseOrder::route('/{record}/edit'),
         ];
@@ -161,7 +167,32 @@ class PurchaseOrderResource extends Resource
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                             $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
                         })
-                        ->gt(0)
+                        ->rules([
+                            fn (Forms\Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                $purchase_request_id=$get('../../purchase_request_id');
+                                if($purchase_request_id){
+                                    $prItem=PurchaseRequestDetail::where('purchase_request_id',$purchase_request_id)
+                                        ->where('product_id',$get('product_id'))
+                                        ->first();
+
+                                    if($prItem){
+                                        if($value>floatval($prItem->balance)){
+                                            $fail("The quantity must be less than or equal to {$prItem->balance}");
+                                        }
+                                    }else{
+                                        $fail("Invalid Product");
+                                    }
+
+
+                                }
+
+                                if($get('qty')<=0){
+                                    $fail("The quantity must be greater than 0");
+                                }
+
+
+                            },
+                        ])
                         ->numeric($decimalPlaces=2)
                         ->default(1)
                         ->columnSpan([
@@ -212,6 +243,7 @@ class PurchaseOrderResource extends Resource
                 ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                     self::updateTotals($get,$set);
                 })
+                ->addable(fn(Forms\Get $get)=>$get('../../purchaseRequest')==null)
                 ->required()
             ];
         }
@@ -237,6 +269,8 @@ class PurchaseOrderResource extends Resource
                         ->modalHeading('Create Supplier')
                         ->modalWidth('lg');
                 }),
+            Forms\Components\Placeholder::make('Purchase Request')
+                        ->content(fn(Component $livewire)=>$livewire->record->purchase_request->reference_no),
         ]; 
     }
 

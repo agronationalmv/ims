@@ -6,8 +6,8 @@ use Filament\Actions;
 
 trait HasCancelAction{
     public function getCancelFormAction(){
-        return Actions\Action::make('cancel')
-                    ->label(__('filament-panels::resources/pages/edit-record.form.actions.cancel.label'))
+        return Actions\Action::make('back')
+                    ->label(__('Back'))
                     ->url($this->previousUrl ?? static::getResource()::getUrl())
                     ->color('gray');
     }
