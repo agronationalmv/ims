@@ -24,6 +24,7 @@ class CreatePurchaseOrder extends CreateRecord
     protected function afterFill(){
         if($this->purchaseRequest){
             $this->data['purchase_request_id']=$this->purchaseRequest?->id;
+            $this->data['expense_account_id']=$this->purchaseRequest?->expense_account_id;
             $this->data['department_id']=$this->purchaseRequest?->department_id;
             $this->data['store_id']=$this->purchaseRequest?->store_id;
             $this->data['items']=$this->purchaseRequest->items->map(function($item){
@@ -44,6 +45,7 @@ class CreatePurchaseOrder extends CreateRecord
             $data['purchase_request_id']=$this->purchaseRequest?->id;
             $data['supplier_id']=$this->purchaseRequest?->supplier_id;
             $data['store_id']=$this->purchaseRequest?->store_id;
+            $data['expense_account_id']=$this->purchaseRequest?->expense_account_id;
         }
         return $data;
     }

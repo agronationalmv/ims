@@ -1,6 +1,9 @@
 <?php
 
 use App\Filament\Enum\PurchaseOrderStatus;
+use App\Models\Department;
+use App\Models\ExpenseAccount;
+use App\Models\PurchaseRequest;
 use App\Models\Supplier;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -17,6 +20,17 @@ return new class extends Migration
             $table->id();
             $table->string('reference_no')->nullable();
             $table->foreignIdFor(Supplier::class)->nullable();
+            $table->foreignIdFor(ExpenseAccount::class)->nullable();
+            $table->foreignIdFor(PurchaseRequest::class)
+                        ->nullable()
+                        ->constrained()
+                        ->cascadeOnUpdate()
+                        ->restrictOnDelete();
+            $table->foreignIdFor(Department::class)
+                        ->nullable()
+                        ->constrained()
+                        ->cascadeOnUpdate()
+                        ->restrictOnDelete();
             $table->decimal('subtotal')->default(0);
             $table->decimal('total_discount')->default(0);
             $table->decimal('total_gst')->default(0);

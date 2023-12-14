@@ -193,6 +193,10 @@ class BillResource extends Resource
         return [
             Forms\Components\TextInput::make('reference_no')
                 ->required(),
+            Forms\Components\Select::make('expense_account_id')
+                ->relationship('expense_account', 'name')
+                ->readOnly(fn(Forms\Get $get)=>$get('../../purchase_request'))
+                ->required(),
             Forms\Components\DatePicker::make('bill_date')
                 ->format('Y-m-d')
                 ->native(false)

@@ -124,6 +124,9 @@ class PurchaseRequestResource extends Resource
                 ->relationship('store', 'name')
                 ->required()
                 ->live(),
+            Forms\Components\Select::make('expense_account_id')
+                ->relationship('expense_account', 'name')
+                ->required(),
             Forms\Components\Select::make('department_id')
                 ->relationship('department', 'name')
                 ->required(),

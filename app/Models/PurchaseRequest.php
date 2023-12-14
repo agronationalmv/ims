@@ -18,6 +18,10 @@ class PurchaseRequest extends Model
         'status'=>PurchaseRequestStatus::class
     ];
 
+    public function expense_account() : BelongsTo {
+        return $this->belongsTo(ExpenseAccount::class);
+    }
+
     public function requested_by() : BelongsTo {
         return $this->belongsTo(User::class);
     }

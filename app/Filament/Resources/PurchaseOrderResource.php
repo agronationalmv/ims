@@ -255,6 +255,10 @@ class PurchaseOrderResource extends Resource
                 ->relationship('store', 'name')
                 ->required()
                 ->live(),
+            Forms\Components\Select::make('expense_account_id')
+                ->relationship('expense_account', 'name')
+                ->readOnly(fn(Forms\Get $get)=>$get('../../purchase_request'))
+                ->required(),
             Forms\Components\Select::make('supplier_id')
                 ->relationship('supplier', 'name')
                 ->searchable()

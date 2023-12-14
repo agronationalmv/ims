@@ -18,6 +18,10 @@ class Bill extends Model
         'status'=>BillStatus::class
     ];
 
+    public function expense_account() : BelongsTo {
+        return $this->belongsTo(ExpenseAccount::class);
+    }
+
     public function supplier() : BelongsTo {
         return $this->belongsTo(Supplier::class);
     }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Enum\BillStatus;
+use App\Models\ExpenseAccount;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use Illuminate\Database\Migrations\Migration;
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->id();
             $table->string('reference_no')->nullable();
             $table->foreignId('receipt_id')->nullable();
+            $table->foreignIdFor(ExpenseAccount::class)->nullable();
             $table->foreignIdFor(PurchaseOrder::class)->nullable();
             $table->string('bill_date')->nullable();
             $table->foreignIdFor(Supplier::class)->nullable();

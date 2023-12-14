@@ -3,6 +3,7 @@
 use App\Filament\Enum\PurchaseOrderStatus;
 use App\Filament\Enum\PurchaseRequestStatus;
 use App\Models\Department;
+use App\Models\ExpenseAccount;
 use App\Models\Store;
 use App\Models\Supplier;
 use App\Models\User;
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->id();
             $table->string('reference_no')->nullable();
             $table->foreignIdFor(Department::class)->nullable();
+            $table->foreignIdFor(ExpenseAccount::class)->nullable();
             $table->foreignIdFor(Store::class)
                         ->nullable()
                         ->constrained()
