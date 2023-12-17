@@ -205,7 +205,7 @@ class BillResource extends Resource
                 ->required(),
             Forms\Components\Select::make('expense_account_id')
                 ->relationship('expense_account', 'name')
-                ->readOnly(fn(Forms\Get $get)=>$get('../../purchase_request'))
+                ->disabled(fn(Forms\Get $get)=>$get('purchase_request_id'))
                 ->required(),
             Forms\Components\DatePicker::make('bill_date')
                 ->format('Y-m-d')

@@ -20,7 +20,7 @@ class EditProduct extends EditRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['price_each']=$data['price_each']/$data['uoc_qty'];
+        $data['price_each']=$data['price']/$data['uoc_qty'];
         return $data;
     }
 }

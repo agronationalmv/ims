@@ -23,6 +23,7 @@ class CreatePurchaseOrder extends CreateRecord
 
     protected function afterFill(){
         if($this->purchaseRequest){
+            $this->data['purchase_request_reference_no']=$this->purchaseRequest?->reference_no;
             $this->data['purchase_request_id']=$this->purchaseRequest?->id;
             $this->data['expense_account_id']=$this->purchaseRequest?->expense_account_id;
             $this->data['department_id']=$this->purchaseRequest?->department_id;

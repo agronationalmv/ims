@@ -112,7 +112,7 @@ class InventoryAdjustmentResource extends Resource
                         })
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                             $product=Product::find($get('product_id'));
-                            $product->unit;
+                            $product->uoc;
                             $set('product',$product);
                         })
                         ->required()
@@ -123,7 +123,7 @@ class InventoryAdjustmentResource extends Resource
                         ->searchable(),
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
-                        ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
+                        ->prefix(fn(Forms\Get $get)=>$get('product.uoc.name'))
                         ->suffix(function(Forms\Get $get){
                             $product=ProductStore::where('store_id',$get('../../store_id'))
                                             ->where('product_id',$get('product_id'))

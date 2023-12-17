@@ -243,7 +243,7 @@ class PurchaseOrderResource extends Resource
                 ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                     self::updateTotals($get,$set);
                 })
-                ->addable(fn(Forms\Get $get)=>$get('../../purchaseRequest')==null)
+                ->addable(fn(Forms\Get $get)=>$get('purchase_request_id')==null)
                 ->required()
             ];
         }
@@ -253,11 +253,12 @@ class PurchaseOrderResource extends Resource
                 ->required(),
             Forms\Components\Select::make('store_id')
                 ->relationship('store', 'name')
+                ->disabled(fn(Forms\Get $get)=>$get('purchase_request_id'))
                 ->required()
                 ->live(),
             Forms\Components\Select::make('expense_account_id')
                 ->relationship('expense_account', 'name')
-                ->readOnly(fn(Forms\Get $get)=>$get('../../purchase_request'))
+                ->disabled(fn(Forms\Get $get)=>$get('purchase_request_id'))
                 ->required(),
             Forms\Components\Select::make('supplier_id')
                 ->relationship('supplier', 'name')
@@ -274,7 +275,7 @@ class PurchaseOrderResource extends Resource
                         ->modalWidth('lg');
                 }),
             Forms\Components\Placeholder::make('Purchase Request')
-                        ->content(fn(Component $livewire)=>$livewire->record->purchase_request->reference_no),
+                        ->content(fn(Forms\Get $get)=>$get('purchase_request_reference_no')),
         ]; 
     }
 
