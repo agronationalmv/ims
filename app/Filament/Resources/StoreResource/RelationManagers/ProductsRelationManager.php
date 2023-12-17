@@ -54,6 +54,8 @@ class ProductsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('product.name'),
                 Tables\Columns\TextColumn::make('qty'),
+                Tables\Columns\TextColumn::make('product.uoc.name'),
+
             ])
             ->filters([
                 //

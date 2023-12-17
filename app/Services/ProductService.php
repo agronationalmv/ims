@@ -19,7 +19,7 @@ class ProductService{
     public function getProductBalance($store_id,$product){
         $in=PoReceiveDetail::whereHas('po_receive',function($q)use($store_id){
                                     $q->where('store_id',$store_id);
-                                })->where('product_id',$product->id)->sum('qty');
+                                })->where('product_id',$product->id)->sum('consuming_qty');
 
         $out=AdjustmentDetail::whereHas('inventory_adjustment',function($q)use($store_id){
                                     $q->where('store_id',$store_id);
@@ -33,6 +33,15 @@ class ProductService{
 
     public function average_price(Product $product){
         $qty=BillDetail::where('product_id',$product->id)->sum('qty');
+        if($qty<=0){
+            return $product->price;
+        }
+        $total=BillDetail::where('product_id',$product->id)->sum('total');
+        return round($total/$qty,2);
+    }
+
+    public function average_price_consuming(Product $product){
+        $qty=BillDetail::where('product_id',$product->id)->sum('consuming_qty');
         if($qty<=0){
             return $product->price;
         }

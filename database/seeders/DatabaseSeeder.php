@@ -34,8 +34,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\Product::create([
             'name'=>'Carrot',
             'unit_id'=>1,
-            'min_qty'=>5,
-            'qty'=>0,
+            'uoc_id'=>1,
             'price'=>50,
             'gst_rate'=>0
         ]);
@@ -43,8 +42,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\Product::create([
             'name'=>'Apple',
             'unit_id'=>1,
-            'min_qty'=>15,
-            'qty'=>0,
+            'uoc_id'=>1,
             'price'=>5,
             'gst_rate'=>0.08
         ]);
@@ -53,8 +51,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\Product::create([
             'name'=>'Fresh Eggs',
             'unit_id'=>2,
-            'min_qty'=>10,
-            'qty'=>0,
+            'uoc_id'=>2,
             'price'=>1.5,
             'gst_rate'=>0
         ]);

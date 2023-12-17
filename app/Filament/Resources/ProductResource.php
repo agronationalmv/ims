@@ -29,7 +29,17 @@ class ProductResource extends Resource
                         ->required()
                         ->maxLength(255),
                     Forms\Components\Select::make('unit_id')
+                        ->label('buying unit')
                         ->relationship('unit', 'name')
+                        ->required(),
+                    Forms\Components\TextInput::make('uoc_qty')
+                        ->label('convertion rate')
+                        ->required()
+                        ->numeric()
+                        ->default(1),
+                    Forms\Components\Select::make('uoc_id')
+                        ->label('consuming unit')
+                        ->relationship('uoc', 'name')
                         ->required(),
                     Forms\Components\TextInput::make('price')
                         ->required()
@@ -50,6 +60,11 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('unit.name')
+                    ->label('buying unit')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('uoc.name')
+                    ->label('consuming unit')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price')

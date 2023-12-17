@@ -9,4 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['price_each']=$data['price_each']/$data['uoc_qty'];
+        return $data;
+    }
 }

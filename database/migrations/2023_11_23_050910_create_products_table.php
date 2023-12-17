@@ -16,10 +16,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignIdFor(Unit::class);
-            $table->decimal('min_qty',8,3)->default(0);
-            $table->decimal('init_qty',8,3)->default(0);
+            $table->foreignIdFor(Unit::class,'uoc_id')->nullable();
+            $table->decimal('uoc_qty',8,3)->default(1);
             $table->decimal('qty',8,3)->default(0);
             $table->decimal('price')->default(0);
+            $table->decimal('price_each')->default(0);
             $table->decimal('gst_rate',6,3)->default(0);
             $table->softDeletes();
             $table->timestamps();

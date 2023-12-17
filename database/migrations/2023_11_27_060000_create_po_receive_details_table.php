@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(PoReceive::class);
             $table->foreignIdFor(Product::class);
             $table->decimal('qty',8,3);
+            $table->decimal('consuming_qty',8,3)->default(0);
             $table->decimal('price');
             $table->decimal('gst_rate',6,3)->default(0);
             $table->decimal('total');

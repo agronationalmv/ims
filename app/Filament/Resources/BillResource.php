@@ -177,6 +177,16 @@ class BillResource extends Resource
                             'md' => 2,
                         ]),
                 ])
+                ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                    $product = Product::find($data['product_id']);
+                    $price = floatVal($product?->price);
+                    $qty = floatVal($data['qty']);
+                    $gst = floatVal($data['gst_rate']);
+                    $data['price'] = $price;
+                    $data['total'] = $price * $qty*(1+$gst);
+                    $data['consuming_qty'] = $qty*floatVal($product->uoc_qty??0);
+                    return $data;
+                })
                 ->defaultItems(1)
                 ->columns([
                     'md' => 10,

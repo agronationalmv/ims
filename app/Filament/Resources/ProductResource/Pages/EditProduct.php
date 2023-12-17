@@ -17,4 +17,10 @@ class EditProduct extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['price_each']=$data['price_each']/$data['uoc_qty'];
+        return $data;
+    }
 }

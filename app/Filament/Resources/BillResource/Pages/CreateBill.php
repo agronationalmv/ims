@@ -49,6 +49,7 @@ class CreateBill extends CreateRecord
         foreach($this->record->items as $item){
             $product=$item->product;
             $product->price=$productService->average_price($product);
+            $product->price_each=$productService->average_price_consuming($product);
             $product->save();
             $this->record->subtotal=$item->qty*$item->price;
             $this->record->total_gst=$item->gst_rate*$item->price;

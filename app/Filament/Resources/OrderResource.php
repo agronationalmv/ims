@@ -119,7 +119,7 @@ class OrderResource extends Resource
                         })
                         ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                             $product=Product::find($get('product_id'));
-                            $product->unit;
+                            $product->uoc;
                             $set('product',$product);
                         })
                         ->required()
@@ -130,7 +130,7 @@ class OrderResource extends Resource
                         ->searchable(),
                     Forms\Components\TextInput::make('qty')
                         ->label('Quantity')
-                        ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
+                        ->prefix(fn(Forms\Get $get)=>$get('product.uoc.name'))
                         ->suffix(function(Forms\Get $get){
                             $product=ProductStore::where('store_id',$get('../../store_id'))
                                             ->where('product_id',$get('product_id'))
@@ -163,7 +163,7 @@ class OrderResource extends Resource
                 ])
                 ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                     $product=Product::find($data['product_id']);
-                    $price=floatVal($product?->price);
+                    $price=floatVal($product?->price_each);
                     $qty=floatVal($data['qty']);
                     $data['price']=$price;
                     $data['total']=$price*$qty;

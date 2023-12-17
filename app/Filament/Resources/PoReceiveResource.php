@@ -149,6 +149,7 @@ class PoReceiveResource extends Resource
                         $qty = floatVal($data['qty']);
                         $data['price'] = $price;
                         $data['total'] = $price * $qty;
+                        $data['consuming_qty'] = $qty*floatVal($product->uoc_qty??0);
                         return $data;
                     })
                     ->defaultItems(1)
