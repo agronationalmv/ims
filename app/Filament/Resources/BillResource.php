@@ -219,7 +219,14 @@ class BillResource extends Resource
             Forms\Components\Placeholder::make('Purchase Order')
                 ->content(fn(Component $livewire)=>$livewire->record->purchase_order?->reference_no)
                 ->disabled()
-                ->visible(fn(string $operation)=>$operation=='view')
+                ->visible(fn(string $operation)=>$operation=='view'),
+            Forms\Components\FileUpload::make('attachment')
+                ->disk('public')
+                ->downloadable()
+                ->openable()
+                ->preserveFilenames()
+
+
 
         ]; 
     }
