@@ -19,6 +19,8 @@ class LowInventory extends BaseWidget
                 ->columns([
                     Tables\Columns\TextColumn::make('store.name'),
                     Tables\Columns\TextColumn::make('product.name'),
+                    Tables\Columns\TextColumn::make('product.uoc.name')
+                        ->label('Unit'),
                     Tables\Columns\TextColumn::make('min_qty')
                         ->label('Alert level'),
                     Tables\Columns\TextColumn::make('qty')

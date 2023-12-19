@@ -15,10 +15,9 @@ class ItemConsumptionWidget extends BaseWidget
     protected function getTableQuery(): Builder
     {
         return OrderDetail::with('product')
-                                    ->selectRaw("product_id,sum(total) AS total")
+                                    ->selectRaw("product_id,sum(qty) AS qty")
                                     ->where('created_at','>=',now()->format('Y-m-1'))
-                                    ->groupBy("product_id")
-                                    ->limit(10);
+                                    ->groupBy("product_id");
 
     }
 
@@ -26,7 +25,9 @@ class ItemConsumptionWidget extends BaseWidget
     {
         return [
             Tables\Columns\TextColumn::make('product.name'),
-            Tables\Columns\TextColumn::make('total'),
+            Tables\Columns\TextColumn::make('qty'),
+            Tables\Columns\TextColumn::make('product.uoc.name'),
+
         ];
     }
 
