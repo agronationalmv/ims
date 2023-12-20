@@ -12,19 +12,16 @@ class PurchaseReport extends ReportContract{
 
     public static function getColumns(){
         return [
-            'Date'=>'bill.bill_date',
             'Item'=>'product.name',
-            'Invoice No'=>'bill.reference_no',
-            'Expense Account'=>'bill.expense_account.name',
             'Qty'=>'qty',
-            'Price'=>'price',
-            'Gst'=>'gst_rate',
             'Total'=>'total',
         ];
     }
 
     public static function query(){
-        return BillDetail::with('bill','product','bill.expense_account');
+        return BillDetail::with('product')
+                            ->selectRaw('product_id,sum(qty) as qty,sum(total) as total')
+                            ->groupBy('product_id');
     }
 
     public static function filter(Builder $query): Builder{

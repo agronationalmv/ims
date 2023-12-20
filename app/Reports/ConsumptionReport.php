@@ -13,17 +13,17 @@ class ConsumptionReport extends ReportContract{
 
     public static function getColumns(){
         return [
-            'Date'=>'order.order_date',
             'Item'=>'product.name',
             'Qty'=>'qty',
-            'Price'=>'price',
             'Total'=>'total',
         ];
     }
     
 
     public static function query(){
-        return OrderDetail::with('order','product');
+        return OrderDetail::with('product')
+                            ->selectRaw('product_id,sum(qty) as qty,sum(total) as total')
+                            ->groupBy('product_id');
     }
 
     public static function filter(Builder $query): Builder{
