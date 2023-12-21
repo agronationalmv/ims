@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TransactionResource extends Resource
 {    
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?int $navigationSort = 7;
 
     protected static ?string $navigationGroup = "Settings";
