@@ -32,6 +32,10 @@ class SupplierResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('mobile')
+                    ->numeric(),
+                Forms\Components\TextInput::make('email')
+                    ->email(),
                 Forms\Components\TextInput::make('gst_tin_no')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('address')
@@ -45,9 +49,9 @@ class SupplierResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('gst_tin_no')
+                Tables\Columns\TextColumn::make('mobile')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('address')
+                Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

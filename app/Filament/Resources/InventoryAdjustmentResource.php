@@ -148,6 +148,10 @@ class InventoryAdjustmentResource extends Resource
                                     }
                                 }
 
+                                if($value<=0){
+                                    $fail("The quantity must be less than 0");
+                                }
+
                             },
                         ])
                         ->gt(0)
@@ -175,8 +179,12 @@ class InventoryAdjustmentResource extends Resource
         return [
             Forms\Components\TextInput::make('reference_no')
                 ->required()
+                ->visible(fn($operation)=>$operation=='view')
                 ->maxLength(255),
             Forms\Components\DatePicker::make('adjustment_date')
+                ->format('Y-m-d')
+                ->native(false)
+                ->default(now())
                 ->required(),
             Forms\Components\Select::make('store_id')
                 ->relationship('store', 'name')

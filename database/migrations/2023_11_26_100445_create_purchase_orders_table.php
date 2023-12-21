@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('reference_no')->nullable();
             $table->foreignIdFor(Supplier::class)->nullable();
             $table->foreignIdFor(ExpenseAccount::class)->nullable();
+            $table->date('purchase_order_date')->nullable();
             $table->foreignIdFor(PurchaseRequest::class)
                         ->nullable()
                         ->constrained()

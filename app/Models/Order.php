@@ -38,7 +38,7 @@ class Order extends Model implements HasInventory
 
     protected static function generateReference(){
         $nextId=self::count()+1;
-        return "CN".str_pad(strval($nextId),6,"0",STR_PAD_LEFT);
+        return "SI".str_pad(strval($nextId),6,"0",STR_PAD_LEFT);
     }
 
 }

@@ -251,6 +251,11 @@ class PurchaseOrderResource extends Resource
         return [
             Forms\Components\TextInput::make('reference_no')
                 ->required(),
+            Forms\Components\DatePicker::make('purchase_order_date')
+                ->format('Y-m-d')
+                ->native(false)
+                ->default(now())
+                ->required(),
             Forms\Components\Select::make('store_id')
                 ->relationship('store', 'name')
                 ->disabled(fn(Forms\Get $get)=>$get('purchase_request_id'))

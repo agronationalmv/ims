@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('gst_tin_no')->nullable();
+            $table->string('mobile')->nullable();
+            $table->string('email')->nullable();
             $table->string('address')->nullable();
             $table->timestamps();
         });

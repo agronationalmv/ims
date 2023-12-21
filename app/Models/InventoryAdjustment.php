@@ -33,4 +33,16 @@ class InventoryAdjustment extends Model
     public function items() : HasMany {
         return $this->hasMany(AdjustmentDetail::class);
     }
+
+    protected static function boot(){
+        parent::boot();
+        self::creating(function($model){
+            $model->reference_no=self::generateReference();
+        });
+    }
+
+    protected static function generateReference(){
+        $nextId=self::count()+1;
+        return "IA".str_pad(strval($nextId),6,"0",STR_PAD_LEFT);
+    }
 }
