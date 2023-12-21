@@ -6,6 +6,7 @@ use App\Models\BillDetail;
 use App\Models\OrderDetail;
 use App\Reports\Contracts\ReportContract;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms;
 
 class ConsumptionReport extends ReportContract{
 
@@ -25,17 +26,23 @@ class ConsumptionReport extends ReportContract{
                             ->selectRaw('product_id,sum(qty) as qty,sum(total) as total')
                             ->groupBy('product_id');
     }
+    public static function filterForm():array{
+        return [
+            Forms\Components\DatePicker::make('created_from'),
+            Forms\Components\DatePicker::make('created_until'),
+        ];
+    }
 
-    public static function filter(Builder $query,array $filters): Builder{
+    public static function filter(Builder $query,array $data): Builder{
         return $query->when(
-                            $filters['created_from']??'',
+                            $data['created_from']??'',
                             fn (Builder $query, $date): Builder => 
                                 $query->whereHas('order',function(Builder $query)use($date){
                                     $query->whereDate('order_date', '>=', $date);
                                 }),
                         )
                         ->when(
-                            $filters['created_until']??'',
+                            $data['created_until']??'',
                             fn (Builder $query,$date): Builder=> 
                                 $query->whereHas('order',function(Builder $query)use($date){
                                     $query->whereDate('order_date', '<=', $date);

@@ -3,8 +3,10 @@
 namespace App\Reports;
 
 use App\Models\BillDetail;
+use App\Models\ExpenseAccount;
 use App\Reports\Contracts\ReportContract;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms;
 
 class PurchaseReport extends ReportContract{
 
@@ -24,21 +26,38 @@ class PurchaseReport extends ReportContract{
                             ->groupBy('product_id');
     }
 
-    public static function filter(Builder $query,array $filters): Builder{
+    public static function filterForm():array{
+        $expense_accounts=ExpenseAccount::pluck('name','id');
+        return [
+            Forms\Components\Select::make('expense_account_id')
+                        ->options($expense_accounts),
+            Forms\Components\DatePicker::make('created_from'),
+            Forms\Components\DatePicker::make('created_until'),
+        ];
+    }
+
+    public static function filter(Builder $query,array $data): Builder{
         return $query->when(
-            $filters['created_from']??'',
-            fn (Builder $query, $date): Builder => 
-                $query->whereHas('bill',function(Builder $query)use($date){
-                    $query->whereDate('bill_date', '>=', $date);
-                }),
-        )
-        ->when(
-            $filters['created_until']??'',
-            fn (Builder $query,$date): Builder=> 
-                $query->whereHas('bill',function(Builder $query)use($date){
-                    $query->whereDate('bill_date', '<=', $date);
-                }),
-        );
+                        $data['created_from']??'',
+                        fn (Builder $query, $date): Builder => 
+                            $query->whereHas('bill',function(Builder $query)use($date){
+                                $query->whereDate('bill_date', '>=', $date);
+                            }),
+                    )
+                    ->when(
+                        $data['created_until']??'',
+                        fn (Builder $query,$date): Builder=> 
+                            $query->whereHas('bill',function(Builder $query)use($date){
+                                $query->whereDate('bill_date', '<=', $date);
+                            }),
+                    )
+                    ->when(
+                        $data['expense_account_id']??'',
+                        fn (Builder $query,$expense_account_id): Builder=> 
+                                $query->whereHas('bill',function(Builder $query)use($expense_account_id){
+                                    $query->where('expense_account_id', $expense_account_id);
+                                }),
+                    );
     }
 
 }

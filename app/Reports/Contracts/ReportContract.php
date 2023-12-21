@@ -7,6 +7,8 @@ use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Facades\Excel;
+use Filament\Tables\Filters\Filter;
+use Livewire\Component;
 
 abstract class ReportContract  implements FromCollection, WithHeadings{
     use Exportable;
@@ -26,7 +28,19 @@ abstract class ReportContract  implements FromCollection, WithHeadings{
         return static::filter(static::query(),static::$filters)->get()->map(fn($item)=>$this->mapColumn($item));
     }
 
-    public static function filter(Builder $query,array $filters): Builder{
+    public static function tableFilters():mixed{
+        if(static::filterForm()){
+            return [Filter::make('filters')
+                        ->form(fn (Component $livewire) => $livewire->report->provider->filterForm())
+                        ->query(fn (Builder $query, array $data,Component $livewire) => $livewire->report->provider->filter($query,$data))];
+        }
+        return [];
+
+    }
+    public static function filterForm():array{
+        return [];
+    }
+    public static function filter(Builder $query,array $data): Builder{
         return $query;
     }
 

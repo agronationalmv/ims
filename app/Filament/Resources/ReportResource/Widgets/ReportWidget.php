@@ -53,27 +53,11 @@ class ReportWidget extends BaseWidget
 
     public function table(Table $table): Table
     {
+        $filters=$this->report->provider->tableFilters();
         return $table
                 ->query($this->getTableQuery())
                 ->columns($this->getTableColumns())
-                ->filters([
-                    Filter::make('filters')
-                    ->form([
-                        Forms\Components\DatePicker::make('created_from'),
-                        Forms\Components\DatePicker::make('created_until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
-                            );
-                    }),
-                ])
+                ->filters($filters)
                 ->headerActions([
                     Action::make('export')
                                 ->action(fn (Component $livewire) => $livewire->report->provider->export($livewire->tableFilters['filters']??[]))
