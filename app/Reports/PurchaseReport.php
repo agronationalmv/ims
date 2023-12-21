@@ -31,7 +31,8 @@ class PurchaseReport extends ReportContract{
         return [
             Forms\Components\Select::make('expense_account_id')
                         ->options($expense_accounts),
-            Forms\Components\DatePicker::make('created_from'),
+            Forms\Components\DatePicker::make('created_from')
+                        ->default(now()->format('Y-m-1')),
             Forms\Components\DatePicker::make('created_until'),
         ];
     }

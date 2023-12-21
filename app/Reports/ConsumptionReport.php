@@ -28,7 +28,8 @@ class ConsumptionReport extends ReportContract{
     }
     public static function filterForm():array{
         return [
-            Forms\Components\DatePicker::make('created_from'),
+            Forms\Components\DatePicker::make('created_from')
+                ->default(now()->format('Y-m-1')),
             Forms\Components\DatePicker::make('created_until'),
         ];
     }
