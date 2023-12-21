@@ -32,15 +32,35 @@ class ProductsRelationManager extends RelationManager
                 Forms\Components\Select::make('product_id')
                     ->label('Product')
                     ->options(Product::query()->pluck('name', 'id'))
+                    ->live()
+                    ->afterStateHydrated(function(Forms\Get $get,Forms\Set $set){
+                        if($get('product_id')){
+                            $product=Product::with('uoc')->find($get('product_id'));
+                            $set('unit',$product->uoc->name);
+                        }else{
+                            $set('unit','');
+                        }
+                    })
+                    ->afterStateUpdated(function(Forms\Get $get,Forms\Set $set){
+                        if($get('product_id')){
+                            $product=Product::with('uoc')->find($get('product_id'));
+                            $set('unit',$product->uoc->name);
+                        }else{
+                            $set('unit','');
+                        }
+                    })
                     ->searchable()
                     ->required(),
                 Forms\Components\TextInput::make('min_qty')
+                    ->suffix(fn(Forms\Get $get)=>$get('unit'))
                     ->numeric()
                     ->default(0),
                 Forms\Components\TextInput::make('init_qty')
+                    ->suffix(fn(Forms\Get $get)=>$get('unit'))
                     ->numeric()
                     ->default(0),
                 Forms\Components\TextInput::make('qty')
+                    ->suffix(fn(Forms\Get $get)=>$get('unit'))
                     ->numeric()
                     ->readOnly()
                     ->default(0)

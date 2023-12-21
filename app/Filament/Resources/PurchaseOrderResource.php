@@ -240,6 +240,9 @@ class PurchaseOrderResource extends Resource
                     'md' => 10,
                 ])
                 ->live()
+                ->afterStateHydrated(function(Forms\Get $get, Forms\Set $set){
+                    self::updateTotals($get,$set);
+                })
                 ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
                     self::updateTotals($get,$set);
                 })

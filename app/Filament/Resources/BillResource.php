@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Enum\BillStatus;
 use App\Filament\Resources\BillResource\Pages;
 use App\Filament\Resources\BillResource\RelationManagers;
 use App\Models\Bill;
@@ -179,10 +180,9 @@ class BillResource extends Resource
                 ])
                 ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                     $product = Product::find($data['product_id']);
-                    $price = floatVal($product?->price);
+                    $price = floatVal($data['price']);
                     $qty = floatVal($data['qty']);
                     $gst = floatVal($data['gst_rate']);
-                    $data['price'] = $price;
                     $data['total'] = $price * $qty*(1+$gst);
                     $data['consuming_qty'] = $qty*floatVal($product->uoc_qty??0);
                     return $data;
@@ -222,6 +222,7 @@ class BillResource extends Resource
                 ->visible(fn(string $operation)=>$operation=='view'),
             Forms\Components\FileUpload::make('attachment')
                 ->disk('public')
+                ->required()
                 ->downloadable()
                 ->openable()
                 ->preserveFilenames()

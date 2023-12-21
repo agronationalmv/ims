@@ -126,6 +126,13 @@ class PoReceiveResource extends Resource
                                 $product->unit;
                                 $set('product',$product);
                             })
+                            ->afterStateHydrated(function(Forms\Get $get, Forms\Set $set){
+                                if($get('product_id')){
+                                    $product=Product::find($get('product_id'));
+                                    $product->unit;
+                                    $set('product',$product);   
+                                }
+                            })
                             ->live()
                             ->columnSpan([
                                 'md' => 5,
