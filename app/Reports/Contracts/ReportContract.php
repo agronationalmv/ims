@@ -23,10 +23,10 @@ abstract class ReportContract  implements FromCollection, WithHeadings{
     }
 
     public function collection(){
-        return static::filter(static::query())->get()->map(fn($item)=>$this->mapColumn($item));
+        return static::filter(static::query(),static::$filters)->get()->map(fn($item)=>$this->mapColumn($item));
     }
 
-    public static function filter(Builder $query): Builder{
+    public static function filter(Builder $query,array $filters): Builder{
         return $query;
     }
 

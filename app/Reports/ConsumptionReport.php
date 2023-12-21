@@ -26,16 +26,20 @@ class ConsumptionReport extends ReportContract{
                             ->groupBy('product_id');
     }
 
-    public static function filter(Builder $query): Builder{
+    public static function filter(Builder $query,array $filters): Builder{
         return $query->when(
-                    static::$filters['created_from']??'',
-                    fn (Builder $query, $date): Builder => 
-                        $query->whereHas('order',fn(Builder $query, $date)=>$query->whereDate('order_date', '>=', $date)),
-                )
-                ->when(
-                    static::$filters['created_until']??'',
-                    fn (Builder $query): Builder=> 
-                        $query->whereHas('order',fn(Builder $query, $date)=>$query->whereDate('order_date', '<=', $date)),
-                );
+                            $filters['created_from']??'',
+                            fn (Builder $query, $date): Builder => 
+                                $query->whereHas('order',function(Builder $query)use($date){
+                                    $query->whereDate('order_date', '>=', $date);
+                                }),
+                        )
+                        ->when(
+                            $filters['created_until']??'',
+                            fn (Builder $query,$date): Builder=> 
+                                $query->whereHas('order',function(Builder $query)use($date){
+                                    $query->whereDate('order_date', '<=', $date);
+                                }),
+                        );
     }
 }

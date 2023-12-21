@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ReportResource extends Resource
 {
+    protected static ?int $navigationSort = 10;
+
     protected static ?string $model = Report::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';

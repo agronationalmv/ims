@@ -24,17 +24,21 @@ class PurchaseReport extends ReportContract{
                             ->groupBy('product_id');
     }
 
-    public static function filter(Builder $query): Builder{
+    public static function filter(Builder $query,array $filters): Builder{
         return $query->when(
-                    static::$filters['created_from']??'',
-                    fn (Builder $query, $date): Builder => 
-                        $query->whereHas('bill',fn(Builder $query, $date)=>$query->whereDate('bill_date', '>=', $date)),
-                )
-                ->when(
-                    static::$filters['created_until']??'',
-                    fn (Builder $query, $date): Builder => 
-                        $query->whereHas('bill',fn(Builder $query, $date)=>$query->whereDate('bill_date', '<=', $date)),
-                );
+            $filters['created_from']??'',
+            fn (Builder $query, $date): Builder => 
+                $query->whereHas('bill',function(Builder $query)use($date){
+                    $query->whereDate('bill_date', '>=', $date);
+                }),
+        )
+        ->when(
+            $filters['created_until']??'',
+            fn (Builder $query,$date): Builder=> 
+                $query->whereHas('bill',function(Builder $query)use($date){
+                    $query->whereDate('bill_date', '<=', $date);
+                }),
+        );
     }
 
 }

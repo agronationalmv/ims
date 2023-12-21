@@ -19,7 +19,7 @@ use Livewire\Component;
 
 class PoReceiveResource extends Resource
 {
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $model = PoReceive::class;
 

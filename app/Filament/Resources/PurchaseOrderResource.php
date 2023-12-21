@@ -22,7 +22,7 @@ use Livewire\Component;
 
 class PurchaseOrderResource extends Resource
 {
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $model = PurchaseOrder::class;
 

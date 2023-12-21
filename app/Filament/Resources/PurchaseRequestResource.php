@@ -19,6 +19,8 @@ use Illuminate\Support\HtmlString;
 
 class PurchaseRequestResource extends Resource
 {
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $model = PurchaseRequest::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
