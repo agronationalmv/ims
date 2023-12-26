@@ -49,7 +49,8 @@ class ProductResource extends Resource
                         ->default(0.00)
                         ->prefix('$'),
                     Forms\Components\Select::make('gst_rate')
-                        ->options(["0.08"=>"8%"]),
+                        ->options(["0"=>"NA (0%)","0.08"=>"8%"])
+                        ->required(),
                 ])
                 ->columns(2)
             ]);
