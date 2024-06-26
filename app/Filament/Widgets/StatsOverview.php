@@ -8,9 +8,12 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class StatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
+    
     protected static ?int $sort = 1;
     
     protected function getStats(): array

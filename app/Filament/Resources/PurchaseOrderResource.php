@@ -282,8 +282,9 @@ class PurchaseOrderResource extends Resource
                         ->modalHeading('Create Supplier')
                         ->modalWidth('lg');
                 }),
-            Forms\Components\Placeholder::make('Purchase Request')
-                        ->content(fn(Forms\Get $get)=>$get('purchase_request_reference_no')),
+                Forms\Components\TextInput::make('purchase_request_reference_no')
+                ->label('Purchase Request No')
+                ->required(),
         ]; 
     }
 

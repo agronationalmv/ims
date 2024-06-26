@@ -8,9 +8,12 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class ItemConsumptionWidget extends BaseWidget
 {
+    use HasWidgetShield;
+    
     protected static ?int $sort = 4;
     protected int | string | array $columnSpan = 'md';
 

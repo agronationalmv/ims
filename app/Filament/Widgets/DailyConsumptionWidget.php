@@ -9,9 +9,12 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class DailyConsumptionWidget extends BaseWidget
 {
+    use HasWidgetShield;
+
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 'md';
 

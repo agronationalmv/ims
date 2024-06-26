@@ -7,9 +7,12 @@ use App\Models\ProductStore;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class LowInventory extends BaseWidget
 {
+    use HasWidgetShield;
+    
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'md';
     public function table(Table $table): Table

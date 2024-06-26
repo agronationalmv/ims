@@ -26,7 +26,7 @@ class BillResource extends Resource
 
     protected static ?string $model = Bill::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-m-currency-dollar';
 
     public static function form(Form $form): Form
     {

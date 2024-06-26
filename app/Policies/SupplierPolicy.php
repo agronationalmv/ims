@@ -2,18 +2,20 @@
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\Response;
-use App\Models\Supplier;
 use App\Models\User;
+use App\Models\Supplier;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SupplierPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->checkPermissionTo('view-any Supplier');
+        return $user->can('view_any_supplier');
     }
 
     /**
@@ -21,7 +23,7 @@ class SupplierPolicy
      */
     public function view(User $user, Supplier $supplier): bool
     {
-        return $user->checkPermissionTo('view Supplier');
+        return $user->can('view_supplier');
     }
 
     /**
@@ -29,7 +31,7 @@ class SupplierPolicy
      */
     public function create(User $user): bool
     {
-        return $user->checkPermissionTo('create Supplier');
+        return $user->can('create_supplier');
     }
 
     /**
@@ -37,7 +39,7 @@ class SupplierPolicy
      */
     public function update(User $user, Supplier $supplier): bool
     {
-        return $user->checkPermissionTo('update Supplier');
+        return $user->can('update_supplier');
     }
 
     /**
@@ -45,22 +47,62 @@ class SupplierPolicy
      */
     public function delete(User $user, Supplier $supplier): bool
     {
-        return $user->checkPermissionTo('delete Supplier');
+        return $user->can('delete_supplier');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can bulk delete.
      */
-    public function restore(User $user, Supplier $supplier): bool
+    public function deleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('restore Supplier');
+        return $user->can('delete_any_supplier');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete.
      */
     public function forceDelete(User $user, Supplier $supplier): bool
     {
-        return $user->checkPermissionTo('force-delete Supplier');
+        return $user->can('force_delete_supplier');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_supplier');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Supplier $supplier): bool
+    {
+        return $user->can('restore_supplier');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_supplier');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, Supplier $supplier): bool
+    {
+        return $user->can('replicate_supplier');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_supplier');
     }
 }

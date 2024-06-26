@@ -28,7 +28,7 @@ class PoReceiveResource extends Resource
     protected static ?string $modelLabel = 'Item Receipt';
     protected static ?string $pluralModelLabel = 'Item Receipts';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-tag';
 
     public static function form(Form $form): Form
     {
@@ -58,9 +58,6 @@ class PoReceiveResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('store.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('purchase_order.reference_no')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('receipt_date')

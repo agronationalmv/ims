@@ -3,15 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReportResource\Pages;
-use App\Filament\Resources\ReportResource\RelationManagers;
 use App\Models\Report;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ReportResource extends Resource
 {
@@ -19,7 +18,7 @@ class ReportResource extends Resource
 
     protected static ?string $model = Report::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-c-arrow-down-on-square-stack';
 
     public static function form(Form $form): Form
     {
@@ -41,18 +40,10 @@ class ReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('description')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('title')->searchable(),
+                Tables\Columns\TextColumn::make('description')->searchable(),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
@@ -60,6 +51,37 @@ class ReportResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Action::make('download')
+                    ->label('Download Report')
+                    ->action(function ($record, array $data) {
+                        // Use the provider attribute to get the report class instance
+                        $reportInstance = $record->provider;
+                        
+                        // Ensure filters are decoded properly
+                        $filters = json_decode($data['filters'], true);
+
+                        // Check if export method exists and call it
+                        if (method_exists($reportInstance, 'export')) {
+                            return $reportInstance->export($filters);
+                        } else {
+                            throw new \Exception('Export method not found on the report class.');
+                        }
+                    })
+                    ->form([
+                        Forms\Components\Select::make('format')
+                            ->options([
+                                'pdf' => 'PDF',
+                                'csv' => 'CSV',
+                                'xlsx' => 'Excel',
+                            ])
+                            ->required(),
+                        Forms\Components\TextInput::make('filters')
+                            ->label('Filters (JSON)')
+                            ->default('{}')
+                            ->required(),
+                    ])
+                    ->icon('heroicon-c-arrow-down-on-square-stack')
+                    ->requiresConfirmation(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -2,26 +2,28 @@
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\Response;
-use App\Models\PoReceive;
 use App\Models\User;
+use App\Models\PoReceive;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PoReceivePolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->checkPermissionTo('view-any PoReceive');
+        return $user->can('view_any_po::receive');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, PoReceive $poreceive): bool
+    public function view(User $user, PoReceive $poReceive): bool
     {
-        return $user->checkPermissionTo('view PoReceive');
+        return $user->can('view_po::receive');
     }
 
     /**
@@ -29,38 +31,78 @@ class PoReceivePolicy
      */
     public function create(User $user): bool
     {
-        return $user->checkPermissionTo('create PoReceive');
+        return $user->can('create_po::receive');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, PoReceive $poreceive): bool
+    public function update(User $user, PoReceive $poReceive): bool
     {
-        return $user->checkPermissionTo('update PoReceive');
+        return $user->can('update_po::receive');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, PoReceive $poreceive): bool
+    public function delete(User $user, PoReceive $poReceive): bool
     {
-        return $user->checkPermissionTo('delete PoReceive');
+        return $user->can('delete_po::receive');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can bulk delete.
      */
-    public function restore(User $user, PoReceive $poreceive): bool
+    public function deleteAny(User $user): bool
     {
-        return $user->checkPermissionTo('restore PoReceive');
+        return $user->can('delete_any_po::receive');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
+     * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, PoReceive $poreceive): bool
+    public function forceDelete(User $user, PoReceive $poReceive): bool
     {
-        return $user->checkPermissionTo('force-delete PoReceive');
+        return $user->can('force_delete_po::receive');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_po::receive');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, PoReceive $poReceive): bool
+    {
+        return $user->can('restore_po::receive');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_po::receive');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, PoReceive $poReceive): bool
+    {
+        return $user->can('replicate_po::receive');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_po::receive');
     }
 }
