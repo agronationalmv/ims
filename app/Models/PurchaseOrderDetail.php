@@ -32,4 +32,8 @@ class PurchaseOrderDetail extends Model
         return $this->belongsTo(Product::class);
     }
     
+    public function max_qty(){
+        return $this->qty ;
+    }
+
 }

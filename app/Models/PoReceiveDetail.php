@@ -28,6 +28,10 @@ class PoReceiveDetail extends TransactionableModel
     {
         return TransactionTypeEnum::In->value;
     }
+    public function purchase_order_id(){
+        return $this->belongsTo(PoReceive::class);
+    }
+
 
     protected static function boot(){
         parent::boot();

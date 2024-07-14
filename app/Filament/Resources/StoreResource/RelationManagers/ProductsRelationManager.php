@@ -58,7 +58,12 @@ class ProductsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('init_qty')
                     ->suffix(fn(Forms\Get $get)=>$get('unit'))
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->reactive()
+                    ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set, $state) {
+                        $qty = $get('qty') + $state;
+                        $set('qty', $qty);
+                    }),
                 Forms\Components\TextInput::make('qty')
                     ->suffix(fn(Forms\Get $get)=>$get('unit'))
                     ->numeric()
@@ -99,5 +104,9 @@ class ProductsRelationManager extends RelationManager
         return false;
     }
 
-    
+    protected function handleRecordSave($record)
+    {
+        $record->qty += $record->init_qty;
+        $record->save();
+    }
 }

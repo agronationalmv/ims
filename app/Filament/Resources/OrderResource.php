@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrderResource extends Resource
 {
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $model = Order::class;
 
@@ -150,6 +150,9 @@ class OrderResource extends Resource
                                 if($productStore){
                                     if($value>floatval($productStore->qty)){
                                         $fail("The quantity must be less than or equal to {$productStore->qty}");
+                                    }
+                                    if ($value == 0) {
+                                        $fail("The quantity Cannot be 0");
                                     }
                                 }
 

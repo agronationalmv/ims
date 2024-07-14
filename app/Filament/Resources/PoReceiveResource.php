@@ -8,6 +8,9 @@ use App\Filament\Resources\PoReceiveResource\RelationManagers;
 use App\Models\PoReceive;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderDetail;
+use App\Models\PoReceiveDetail;
+use App\Models\ProductStore;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,6 +19,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Livewire\Component;
+use Closure;
 
 class PoReceiveResource extends Resource
 {
@@ -112,22 +116,22 @@ class PoReceiveResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('product_id')
                             ->label('Product')
-                            ->options(function(Forms\Get $get){
-                                return Product::query()->whereHas('stores',function($q)use($get){
-                                    $q->where('store_id',$get('../../store_id'));
+                            ->options(function (Forms\Get $get) {
+                                return Product::query()->whereHas('stores', function ($q) use ($get) {
+                                    $q->where('store_id', $get('../../store_id'));
                                 })->pluck('name', 'id');
-    
-                            })->required()
-                            ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                                $product=Product::find($get('product_id'));
-                                $product->unit;
-                                $set('product',$product);
                             })
-                            ->afterStateHydrated(function(Forms\Get $get, Forms\Set $set){
-                                if($get('product_id')){
-                                    $product=Product::find($get('product_id'));
+                            ->required()
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                $product = Product::find($get('product_id'));
+                                $product->unit;
+                                $set('product', $product);
+                            })
+                            ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set) {
+                                if ($get('product_id')) {
+                                    $product = Product::find($get('product_id'));
                                     $product->unit;
-                                    $set('product',$product);   
+                                    $set('product', $product);
                                 }
                             })
                             ->live()
@@ -138,7 +142,7 @@ class PoReceiveResource extends Resource
 
                         Forms\Components\TextInput::make('qty')
                             ->label('Quantity')
-                            ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
+                            ->prefix(fn(Forms\Get $get) => $get('product.unit.name'))
                             ->numeric($decimalPlaces = 2)
                             ->default(1)
                             ->gt(0)
@@ -146,14 +150,55 @@ class PoReceiveResource extends Resource
                                 'md' => 2,
                             ])
                             ->required()
+                            ->rules([
+                                fn (Forms\Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    $purchaseOrderId = $get('../../purchase_order_id');
+                                    $productId = $get('product_id');
+
+                                    // Check the current allocated quantity and total quantity for the PO
+                                    $currentAllocatedQty = PoReceiveDetail::whereHas('po_receive', function ($query) use ($purchaseOrderId) {
+                                        $query->where('purchase_order_id', $purchaseOrderId);
+                                    })
+                                    ->where('product_id', $productId)
+                                    ->sum('qty') ?? 0;
+
+                                    if (empty($currentAllocatedQty)) {
+                                        $currentAllocatedQty = 0;
+                                    }
+
+                                    $maxQty = PurchaseOrderDetail::where('purchase_order_id', $purchaseOrderId)
+                                        ->where('product_id', $productId)
+                                        ->value('qty') ?? 0;
+
+                                    $remaining = $maxQty-$currentAllocatedQty;
+
+                                    if (($currentAllocatedQty + $value) > $maxQty) {
+                                        $fail("The quantity exceeds the maximum limit for the purchase order. Maximum: {$maxQty}(Remaining: {$remaining}.000)");
+                                    }
+
+                                    if ($value == 0) {
+                                        $fail("The quantity Cannot be 0");
+                                    }
+
+                                    // Check against the available quantity in the ProductStore
+                                    $productStore = ProductStore::where('store_id', $get('../../store_id'))
+                                        ->where('product_id', $productId)
+                                        ->first();
+
+                                    if ($productStore && $value > floatval($productStore->qty)) {
+                                        $fail("The quantity must be less than or equal to {$productStore->qty}");
+                                    }
+                                },
+                            ])
+                            ->reactive(),
                     ])
                     ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                         $product = Product::find($data['product_id']);
-                        $price = floatVal($product?->price);
-                        $qty = floatVal($data['qty']);
+                        $price = floatval($product?->price);
+                        $qty = floatval($data['qty']);
                         $data['price'] = $price;
                         $data['total'] = $price * $qty;
-                        $data['consuming_qty'] = $qty*floatVal($product->uoc_qty??0);
+                        $data['consuming_qty'] = $qty * floatval($product->uoc_qty ?? 0);
                         return $data;
                     })
                     ->defaultItems(1)
@@ -198,7 +243,6 @@ class PoReceiveResource extends Resource
                 ->required(),
         ];
     }
-
 
     public static function shouldRegisterNavigation(): bool
     {

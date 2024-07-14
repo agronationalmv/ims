@@ -22,7 +22,7 @@ use Livewire\Component;
 
 class BillResource extends Resource
 {
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $model = Bill::class;
 
