@@ -171,23 +171,23 @@ class PoReceiveResource extends Resource
                                         ->value('qty') ?? 0;
 
                                     $remaining = $maxQty-$currentAllocatedQty;
-
+                                   
                                     if (($currentAllocatedQty + $value) > $maxQty) {
                                         $fail("The quantity exceeds the maximum limit for the purchase order. Maximum: {$maxQty}(Remaining: {$remaining}.000)");
                                     }
 
-                                    if ($value == 0) {
+                                    if ($value == 0 || $value < 0) {
                                         $fail("The quantity Cannot be 0");
                                     }
 
                                     // Check against the available quantity in the ProductStore
-                                    $productStore = ProductStore::where('store_id', $get('../../store_id'))
-                                        ->where('product_id', $productId)
-                                        ->first();
+                                    // $productStore = ProductStore::where('store_id', $get('../../store_id'))
+                                    //     ->where('product_id', $productId)
+                                    //     ->first();
 
-                                    if ($productStore && $value > floatval($productStore->qty)) {
-                                        $fail("The quantity must be less than or equal to {$productStore->qty}");
-                                    }
+                                    // if ($productStore && $value > floatval($productStore->qty)) {
+                                    //     $fail("The quantity must be less than or equal to {$productStore->qty}");
+                                    // }
                                 },
                             ])
                             ->reactive(),
@@ -241,6 +241,15 @@ class PoReceiveResource extends Resource
                 ->native(false)
                 ->default(now())
                 ->required(),
+
+            Forms\Components\FileUpload::make('attachment')
+            ->label('Invoive & Delivery Note')
+            ->disk('public')
+            ->required()
+            ->downloadable()
+            ->openable()
+            ->preserveFilenames()
+            ->required(),
         ];
     }
 

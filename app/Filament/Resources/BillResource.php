@@ -39,7 +39,9 @@ class BillResource extends Resource
                             ->columns(2),
 
                         Forms\Components\Section::make()
-                            ->schema(static::getFormSchema('items')),
+                            ->schema(static::getFormSchema('items'))
+                            ->columns(1),
+                            
                     ])
                     ->columnSpan(['lg' => 2]),
 
@@ -66,6 +68,10 @@ class BillResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('reference_no')
                     ->searchable(),
+                    Tables\Columns\TextColumn::make('purchase_order.reference_no')
+                    ->label('Purchase Order')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('bill_date')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('supplier.name')
@@ -118,85 +124,85 @@ class BillResource extends Resource
 
     public static function getFormSchema(string $section = null): array
     {
-        if($section=='items'){
+        if ($section == 'items') {
             return [
                 Forms\Components\Repeater::make('items')
-                ->relationship()
-                ->schema([
-                    Forms\Components\Select::make('product_id')
-                        ->label('Product')
-                        ->relationship('product','name')
-                        ->live(debounce: 500)
-                        ->required()
-                        ->dehydrated()
-                        ->disabled()
-                        ->columnSpan([
-                            'md' => 5,
-                        ]),
-                    Forms\Components\Hidden::make('product_id'),
-                    Forms\Components\TextInput::make('qty')
-                        ->label('Quantity')
-                        ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
-                        ->live(debounce: 500)
-                        ->numeric($decimalPlaces=2)
-                        ->disabled(true)
-                        ->dehydrated()
-                        ->gt(0)
-                        ->columnSpan([
-                            'md' => 2,
-                        ])
-                        ->required(),
+                    ->relationship()
+                    ->schema([
+                        Forms\Components\Select::make('product_id')
+                            ->label('Product')
+                            ->relationship('product', 'name')
+                            ->live(debounce: 500)
+                            ->required()
+                            ->dehydrated()
+                            ->disabled()
+                            ->columnSpan([
+                                'md' => 5,
+                            ]),
+                        Forms\Components\Hidden::make('product_id'),
+                        Forms\Components\TextInput::make('qty')
+                            ->label('Quantity')
+                            ->prefix(fn(Forms\Get $get) => $get('product.unit.name'))
+                            ->live(debounce: 500)
+                            ->numeric($decimalPlaces = 2)
+                            ->disabled(true)
+                            ->dehydrated()
+                            ->gt(0)
+                            ->columnSpan([
+                                'md' => 2,
+                            ])
+                            ->required(),
 
-                    Forms\Components\TextInput::make('price')
-                        ->label('Price')
-                        ->live(debounce: 500)
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
-                        ->required()
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                        })
-                        ->columnSpan([
-                            'md' => 3,
-                        ]),
-                    Forms\Components\TextInput::make('gst_rate')
-                        ->label('GST Rate')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=3)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
-                    Forms\Components\TextInput::make('total')
-                        ->label('Subtotal')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
-                ])
-                ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                    $product = Product::find($data['product_id']);
-                    $price = floatVal($data['price']);
-                    $qty = floatVal($data['qty']);
-                    $gst = floatVal($data['gst_rate']);
-                    $data['total'] = $price * $qty*(1+$gst);
-                    $data['consuming_qty'] = $qty*floatVal($product->uoc_qty??0);
-                    return $data;
-                })
-                ->defaultItems(1)
-                ->columns([
-                    'md' => 10,
-                ])
-                ->deletable(false)
-                ->addable(false)
-                ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                    self::updateTotals($get,$set);
-                })
-                ->required()
+                        Forms\Components\TextInput::make('price')
+                            ->label('Price')
+                            ->live(debounce: 500)
+                            ->dehydrated()
+                            ->numeric($decimalPlaces = 2)
+                            ->required()
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                $set('total', round(($get('price') * $get('qty') * (1 + $get('gst_rate'))) ?? 0, 2));
+                            })
+                            ->columnSpan([
+                                'md' => 3,
+                            ]),
+                        Forms\Components\TextInput::make('gst_rate')
+                            ->label('GST Rate')
+                            ->disabled()
+                            ->dehydrated()
+                            ->numeric($decimalPlaces = 3)
+                            ->required()
+                            ->columnSpan([
+                                'md' => 2,
+                            ]),
+                        Forms\Components\TextInput::make('total')
+                            ->label('Subtotal')
+                            ->disabled()
+                            ->dehydrated()
+                            ->numeric($decimalPlaces = 2)
+                            ->required()
+                            ->columnSpan([
+                                'md' => 2,
+                            ]),
+                    ])
+                    ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                        $product = Product::find($data['product_id']);
+                        $price = floatVal($data['price']);
+                        $qty = floatVal($data['qty']);
+                        $gst = floatVal($data['gst_rate']);
+                        $data['total'] = $price * $qty * (1 + $gst);
+                        $data['consuming_qty'] = $qty * floatVal($product->uoc_qty ?? 0);
+                        return $data;
+                    })
+                    ->defaultItems(1)
+                    ->columns([
+                        'md' => 10,
+                    ])
+                    ->deletable(false)
+                    ->addable(false)
+                    ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                        self::updateTotals($get, $set);
+                    })
+                    ->required()
             ];
         }
 
@@ -205,7 +211,7 @@ class BillResource extends Resource
                 ->required(),
             Forms\Components\Select::make('expense_account_id')
                 ->relationship('expense_account', 'name')
-                ->disabled(fn(Forms\Get $get)=>$get('purchase_request_id'))
+                ->disabled(fn(Forms\Get $get) => $get('purchase_request_id'))
                 ->required(),
             Forms\Components\DatePicker::make('bill_date')
                 ->format('Y-m-d')
@@ -217,36 +223,37 @@ class BillResource extends Resource
                 ->disabled()
                 ->required(),
             Forms\Components\Placeholder::make('Purchase Order')
-                ->content(fn(Component $livewire)=>$livewire->record->purchase_order?->reference_no)
+                ->content(fn(Component $livewire) => $livewire->record->purchase_order?->reference_no)
                 ->disabled()
-                ->visible(fn(string $operation)=>$operation=='view'),
-            Forms\Components\FileUpload::make('attachment')
-                ->disk('public')
-                ->required()
-                ->downloadable()
-                ->openable()
-                ->preserveFilenames()
-
-
-
-        ]; 
+                ->visible(fn(string $operation) => $operation == 'view'),
+            Forms\Components\Placeholder::make('attachment')
+                ->label('Attachment')
+                ->content(function (Forms\Get $get) {
+                    $attachment = $get('attachment');
+                    if ($attachment) {
+                        $attachmentUrl = \Storage::disk('public')->url($get('attachment'));
+                        return new HtmlString('<a href="'.$attachmentUrl.'" target="_blank"><svg style="max-height:33px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                        </svg>
+                        </a>');
+                    } else {
+                        return new HtmlString('<i class="heroicon-s-x-circle"></i> No Attachment');
+                    }
+                }),
+        ];
     }
 
-    // This function updates totals based on the selected products and quantities
     public static function updateTotals(Forms\Get $get, Forms\Set $set): void
     {
-        // Retrieve all selected products and remove empty rows
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['qty']));
-        // Calculate subtotal based on the selected products and quantities
         $subtotal = $selectedProducts->reduce(function ($subtotal, $product) {
             return $subtotal + ($product['price'] * $product['qty']);
         }, 0);
 
         $total_gst = $selectedProducts->reduce(function ($gst_total, $product) {
-            return $gst_total + ($product['price']*$product['gst_rate'] * $product['qty']);
+            return $gst_total + ($product['price'] * $product['gst_rate'] * $product['qty']);
         }, 0);
     
-        // Update the state with the new values
         $set('subtotal', number_format($subtotal, 2, '.', ''));
         $set('total_gst', number_format($total_gst, 2, '.', ''));
         $set('net_total', number_format($subtotal + $total_gst, 2, '.', ''));

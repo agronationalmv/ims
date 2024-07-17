@@ -24,6 +24,7 @@ class CreateBill extends CreateRecord
         if($this->receipt){
             $this->data['receipt_id']=$this->receipt?->id;
             $this->data['supplier_id']=$this->receipt?->supplier_id;
+            $this->data['attachment']=$this->receipt?->attachment;
             $this->data['expense_account_id']=$this->receipt?->purchase_order?->expense_account_id;
             $this->data['items']=$this->receipt->items()->with('product','product.unit')->get()->toArray();
         }
@@ -34,6 +35,7 @@ class CreateBill extends CreateRecord
         if($this->receipt){
             $data['receipt_id']=$this->receipt?->id;
             $data['purchase_order_id']=$this->receipt?->purchase_order_id;
+            $data['attachment']=$this->receipt?->attachment;
             $data['supplier_id']=$this->receipt?->supplier_id;
             $data['expense_account_id']=$this->receipt?->purchase_order?->expense_account_id;
         }  

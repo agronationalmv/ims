@@ -35,7 +35,7 @@ class ProductResource extends Resource
                         ->relationship('unit', 'name')
                         ->required(),
                     Forms\Components\TextInput::make('uoc_qty')
-                        ->label('convertion rate')
+                        ->label('Products per 1 Buying unit')
                         ->required()
                         ->numeric()
                         ->default(1),
@@ -47,7 +47,7 @@ class ProductResource extends Resource
                         ->required()
                         ->numeric()
                         ->default(0.00)
-                        ->prefix('$'),
+                        ->suffix('/-'),
                     Forms\Components\Select::make('gst_rate')
                         ->options(["0"=>"NA (0%)","0.08"=>"8%"])
                         ->required(),
