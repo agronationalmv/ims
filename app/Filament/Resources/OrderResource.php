@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrderResource extends Resource
 {
+    protected static ?string $navigationGroup = "Manage Inventory";
+    
     protected static ?int $navigationSort = 4;
 
     protected static ?string $model = Order::class;

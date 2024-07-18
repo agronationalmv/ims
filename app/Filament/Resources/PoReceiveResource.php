@@ -23,7 +23,9 @@ use Closure;
 
 class PoReceiveResource extends Resource
 {
-    protected static ?int $navigationSort = 5;
+    protected static ?string $navigationGroup = "Manage Inventory";
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $model = PoReceive::class;
 

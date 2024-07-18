@@ -15,6 +15,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
+    
+    protected static ?string $navigationGroup = "Admin Panel";
+    
     protected static ?int $navigationSort = 9;
 
     protected static ?string $model = Product::class;

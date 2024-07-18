@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InventoryAdjustmentResource extends Resource
 {
+    protected static ?string $navigationGroup = "Manage Inventory";
+    
     protected static ?int $navigationSort = 7;
 
     protected static ?string $model = InventoryAdjustment::class;

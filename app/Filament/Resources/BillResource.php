@@ -22,6 +22,8 @@ use Livewire\Component;
 
 class BillResource extends Resource
 {
+    protected static ?string $navigationGroup = "Manage Inventory";
+    
     protected static ?int $navigationSort = 3;
 
     protected static ?string $model = Bill::class;

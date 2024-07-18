@@ -31,7 +31,9 @@ class DatabaseSeeder extends Seeder
         \App\Models\Unit::create([
             'name'=>'pcs'
         ]);
-
+        \App\Models\Unit::create([
+            'name'=>'case'
+        ]);
 
         \App\Models\Supplier::create([
             'name'=>'Madihaa Pvt. Ltd.',

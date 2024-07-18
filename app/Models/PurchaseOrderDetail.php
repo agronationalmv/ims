@@ -16,6 +16,11 @@ class PurchaseOrderDetail extends Model
         return $this->belongsTo(PurchaseOrder::class);
     }
 
+    public function purchase_request() : BelongsTo { 
+        return $this->belongsTo(PurchaseRequest::class);
+    }
+
+
     public function getBalanceAttribute(){
         return $this->qty - $this->received;
     }

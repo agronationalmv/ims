@@ -8,6 +8,7 @@ use App\Filament\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
+use App\Models\PurchaseOrderDetail;
 use App\Models\PurchaseRequestDetail;
 use Closure;
 use Filament\Actions\Action;
@@ -22,6 +23,8 @@ use Livewire\Component;
 
 class PurchaseOrderResource extends Resource
 {
+    protected static ?string $navigationGroup = "Manage Inventory";
+
     protected static ?int $navigationSort = 1;
 
     protected static ?string $model = PurchaseOrder::class;
@@ -169,7 +172,30 @@ class PurchaseOrderResource extends Resource
                         })
                         ->rules([
                             fn (Forms\Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                                $purchase_request_id=$get('../../purchase_request_id');
+                                $productId=$get('product_id');
+                                $purchase_request_id=$get('../../purchase_request_reference_no');
+                                
+                                // Check the current allocated quantity and total quantity for the PR
+                                $currentAllocatedQty = PurchaseOrderDetail::whereHas('purchase_order', function ($query) use ($purchase_request_id) {
+                                    $query->where('purchase_request_id', $purchase_request_id);
+                                })
+                                ->where('product_id', $productId)
+                                ->sum('qty') ?? 0;
+                                
+                                if (empty($currentAllocatedQty)) {
+                                    $currentAllocatedQty = 0;
+                                }
+                        
+                                $maxQty = PurchaseRequestDetail::where('purchase_request_id', $purchase_request_id)
+                                    ->where('product_id', $productId)
+                                    ->value('qty');
+                                   
+                                $remaining = $maxQty-$currentAllocatedQty;
+    
+                                if (($currentAllocatedQty + $value) > $maxQty) {
+                                    $fail("The quantity exceeds the maximum limit for the Purchase Request. Maximum: {$maxQty}(Remaining: {$remaining}.000)");
+                                }
+
                                 if($purchase_request_id){
                                     $prItem=PurchaseRequestDetail::where('purchase_request_id',$purchase_request_id)
                                         ->where('product_id',$get('product_id'))
@@ -177,7 +203,7 @@ class PurchaseOrderResource extends Resource
 
                                     if($prItem){
                                         if($value>floatval($prItem->balance)){
-                                            $fail("The quantity must be less than or equal to {$prItem->balance}");
+                                            $fail("The quantity must be less than or equal to PR amount{$prItem->balance}");
                                         }
                                     }else{
                                         $fail("Invalid Product");
@@ -193,6 +219,7 @@ class PurchaseOrderResource extends Resource
 
                             },
                         ])
+
                         ->numeric($decimalPlaces=2)
                         ->default(1)
                         ->columnSpan([
@@ -282,9 +309,10 @@ class PurchaseOrderResource extends Resource
                         ->modalHeading('Create Supplier')
                         ->modalWidth('lg');
                 }),
-                Forms\Components\TextInput::make('purchase_request_reference_no')
-                ->label('Purchase Request No')
-                ->required(),
+                Forms\Components\Select::make('purchase_request_reference_no')
+                ->relationship('purchase_request', 'reference_no', fn ($query) => $query->where('status', 'approved'))
+                ->searchable()
+                ->required()
         ]; 
     }
 

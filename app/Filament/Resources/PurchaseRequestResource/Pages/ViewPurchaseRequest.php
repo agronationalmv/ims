@@ -7,6 +7,7 @@ use App\Filament\Resources\PurchaseRequestResource;
 use App\Filament\Traits\HasCancelAction;
 use App\Models\PurchaseRequest;
 use Filament\Actions;
+use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewPurchaseRequest extends ViewRecord
@@ -18,34 +19,47 @@ class ViewPurchaseRequest extends ViewRecord
     protected function getHeaderActions(): array
     {
         $actions=[];
-        if($this->record->status!=PurchaseRequestStatus::Completed){
-            $actions[]=$this->getPoCreateAction();
-        }
+        // if($this->record->status!=PurchaseRequestStatus::Completed){
+        //     $actions[]=$this->getPoCreateAction();
+        // }
         $actions[]=$this->getCancelFormAction();
         $actions[]=Actions\EditAction::make();
+        $hodId = $this->record->department->hod_id; // assuming relationship is defined
+        $user = Auth::user();  
+        if ($user->id == $hodId ) {
+            return array_merge($actions,$this->getStatusActions());
+        }
+        else{
+            return $actions;
+        }
 
-        return array_merge($actions,$this->getStatusActions());
+       
     }
 
     protected function afterFill(){
         $this->data['items']=$this->record->items()->with('product','product.unit')->get()->toArray();
     }
 
-    private function getPoCreateAction(){
-        return Actions\Action::make(__('Convert to PurchaseOrder'))
-            ->url(fn (): string => route('filament.admin.resources.purchase-orders.create',['purchaseRequest'=>$this->record->id]));
-    }
-    private function getStatusActions(){
-        $actions=[];
-        foreach($this->record->status->getActions() as $label=>$status){
-            $actions[]=Actions\Action::make($label)
-                            ->action(function(PurchaseRequest $record)use($status){
-                                $record->status=$status->value;
-                                $record->save();
-                            })
-                            ->modalDescription("Are you sure?")
-                            ->requiresConfirmation()
-                            ->color($status->getColor());
+    // private function getPoCreateAction(){
+    //     return Actions\Action::make(__('Convert to PurchaseOrder'))
+    //         ->url(fn (): string => route('filament.admin.resources.purchase-orders.create',['purchaseRequest'=>$this->record->id]));
+    // }
+    private function getStatusActions()
+    {
+        $actions = [];
+        
+        foreach ($this->record->status->getActions() as $label => $status) {
+         
+                $actions[] = Actions\Action::make($label)
+                ->action(function (PurchaseRequest $record) use ($status) {
+                    $record->status = $status->value;
+                    $record->save();
+                })
+                ->modalDescription("Are you sure?")
+                ->requiresConfirmation()
+                ->color($status->getColor());
+            
+           
         }
         return $actions;
     }
