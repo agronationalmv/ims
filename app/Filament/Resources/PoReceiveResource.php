@@ -123,12 +123,42 @@ class PoReceiveResource extends Resource
                                 $product = Product::find($get('product_id'));
                                 $set('product', $product);
                                 $set('gst_rate', $product->gst_rate);
+
+                                $purchaseOrderId = $get('../../purchase_order_id');
+                                $productId = $get('product_id');
+                                $currentAllocatedQty = PoReceiveDetail::whereHas('po_receive', function ($query) use ($purchaseOrderId) {
+                                    $query->where('purchase_order_id', $purchaseOrderId);
+                                })
+                                ->where('product_id', $productId)
+                                ->sum('qty') ?? 0;
+
+                                $maxQty = PurchaseOrderDetail::where('purchase_order_id', $purchaseOrderId)
+                                    ->where('product_id', $productId)
+                                    ->value('qty') ?? 0;
+
+                                $remaining = $maxQty - $currentAllocatedQty;
+                                $set('qty_suffix', "Remaining: {$remaining}");
                             })
                             ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set) {
                                 if ($get('product_id')) {
                                     $product = Product::find($get('product_id'));
                                     $set('product', $product);
                                     $set('gst_rate', $product->gst_rate);
+
+                                    $purchaseOrderId = $get('../../purchase_order_id');
+                                    $productId = $get('product_id');
+                                    $currentAllocatedQty = PoReceiveDetail::whereHas('po_receive', function ($query) use ($purchaseOrderId) {
+                                        $query->where('purchase_order_id', $purchaseOrderId);
+                                    })
+                                    ->where('product_id', $productId)
+                                    ->sum('qty') ?? 0;
+
+                                    $maxQty = PurchaseOrderDetail::where('purchase_order_id', $purchaseOrderId)
+                                        ->where('product_id', $productId)
+                                        ->value('qty') ?? 0;
+
+                                    $remaining = $maxQty - $currentAllocatedQty;
+                                    $set('qty_suffix', "Remaining: {$remaining}");
                                 }
                             })
                             ->live()
@@ -140,6 +170,7 @@ class PoReceiveResource extends Resource
                         Forms\Components\TextInput::make('qty')
                             ->label('Quantity')
                             ->prefix(fn(Forms\Get $get) => $get('product.unit.name'))
+                            ->suffix(fn(Forms\Get $get) => $get('qty_suffix'))
                             ->numeric($decimalPlaces = 2)
                             ->default(1)
                             ->gt(0)
