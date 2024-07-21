@@ -53,7 +53,7 @@ class PurchaseRequestResource extends Resource
                                             </x-filament::badge>',['record'=>$record])
                                         );
                         })
-                        ->hidden(fn (?string $operation) => $operation=='create'),
+                        ->hidden(fn (?string $operation) => $operation == 'create'),
 
                 ])
                 ->columnSpan(['lg' => 1])
@@ -111,11 +111,11 @@ class PurchaseRequestResource extends Resource
         ];
     }
 
-    public static function getFormSchema(){
+    public static function getFormSchema()
+    {
         return [
             Forms\Components\TextInput::make('reference_no')
-                ->readOnly()
-                ->visible(fn($operation)=>$operation=='view'),
+                ->label('PR Number'),
             Forms\Components\Select::make('store_id')
                 ->relationship('store', 'name')
                 ->required()
@@ -126,97 +126,91 @@ class PurchaseRequestResource extends Resource
             Forms\Components\Select::make('department_id')
                 ->relationship('department', 'name')
                 ->required(),
-            Forms\Components\Textarea::make('purpose')
+            Forms\Components\TextInput::make('budget_code')
+                ->label('Budget Code')
+                ->hidden(fn (Forms\Get $get, ?string $operation) => $operation == 'create' || !in_array($get('status'), [PurchaseRequestStatus::Approved->value, PurchaseRequestStatus::Completed->value])),
+            Forms\Components\Textarea::make('purpose'),
 
         ];
     }
 
-    public static function getItemSchema(){
+    public static function getItemSchema()
+    {
         return [
             Forms\Components\Repeater::make('items')
-            ->relationship()
-            ->schema([
-                Forms\Components\Select::make('product_id')
-                    ->label('Product')
-                    ->options(function(Forms\Get $get){
-                        return Product::query()->whereHas('stores',function($q)use($get){
-                            $q->where('store_id',$get('../../store_id'));
-                        })->pluck('name', 'id');
+                ->relationship()
+                ->schema([
+                    Forms\Components\Select::make('product_id')
+                        ->label('Product')
+                        ->options(function (Forms\Get $get) {
+                            return Product::query()->whereHas('stores', function ($q) use ($get) {
+                                $q->where('store_id', $get('../../store_id'));
+                            })->pluck('name', 'id');
+                        })
+                        ->required(fn (Forms\Get $get) => empty($get('description')))
+                        ->live()
+                        ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                            $product = Product::find($get('product_id'));
+                            $product?->unit;
+                            $set('product', $product);
+                        })
+                        ->columnSpan(['md' => 5])
+                        ->searchable(),
+                    Forms\Components\Textarea::make('description')
+                        ->required(fn (Forms\Get $get) => empty($get('product_id')))
+                        ->columnSpan(['md' => 5]),
+                    Forms\Components\TextInput::make('qty')
+                        ->label('Quantity')
+                        ->prefix(fn (Forms\Get $get) => $get('product.unit.name'))
+                        ->live(debounce: 500)
+                        ->gt(0)
+                        ->numeric($decimalPlaces = 2)
+                        ->default(1)
+                        ->columnSpan(['md' => 2])
+                        ->required(),
 
-                    })
-                    ->required(fn(Forms\Get $get)=>empty($get('description')))
-                    ->live()
-                    ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                        $product=Product::find($get('product_id'));
-                        $product?->unit;
-                        $set('product',$product);
-                    })
-                    ->columnSpan([
-                        'md' => 5,
-                    ])
-                    ->searchable(),
-                Forms\Components\Textarea::make('description')
-                    ->required(fn(Forms\Get $get)=>empty($get('product_id')))
-                    ->columnSpan([
-                        'md' => 5,
-                    ]),
-                Forms\Components\TextInput::make('qty')
-                    ->label('Quantity')
-                    ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
-                    ->live(debounce: 500)
-                    ->gt(0)
-                    ->numeric($decimalPlaces=2)
-                    ->default(1)
-                    ->columnSpan([
-                        'md' => 2,
-                    ])
-                    ->required(),
-
-                // Forms\Components\TextInput::make('price')
-                //     ->label('Price')
-                //     ->live(debounce: 500)
-                //     ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                //         $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                //     })
-                //     ->dehydrated()
-                //     ->numeric($decimalPlaces=2)
-                //     ->default(0)
-                //     ->columnSpan([
-                //         'md' => 3,
-                //     ]),
-                // Forms\Components\TextInput::make('gst_rate')
-                //     ->label('GST Rate')
-                //     ->disabled()
-                //     ->dehydrated()
-                //     ->numeric($decimalPlaces=3)
-                //     ->default(0)
-                //     ->columnSpan([
-                //         'md' => 2,
-                //     ]),
-                // Forms\Components\TextInput::make('total')
-                    // ->label('Subtotal')
-                    // ->disabled()
-                    // ->dehydrated()
-                    // ->numeric($decimalPlaces=2)
-                    // ->required()
-                    // ->columnSpan([
-                    //     'md' => 2,
-                    // ]),
-            ])
-            // ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-            //     $data['total']=$data['price']*$data['qty']*(1+$data['gst_rate']);
-            //     return $data;
-            // })
-            ->defaultItems(1)
-            ->columns([
-                'md' => 10,
-            ])
-            ->live()
-            // ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-            //     self::updateTotals($get,$set);
-            // })
-            ->required()
+                    // Forms\Components\TextInput::make('price')
+                    //     ->label('Price')
+                    //     ->live(debounce: 500)
+                    //     ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                    //         $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
+                    //     })
+                    //     ->dehydrated()
+                    //     ->numeric($decimalPlaces=2)
+                    //     ->default(0)
+                    //     ->columnSpan([
+                    //         'md' => 3,
+                    //     ]),
+                    // Forms\Components\TextInput::make('gst_rate')
+                    //     ->label('GST Rate')
+                    //     ->disabled()
+                    //     ->dehydrated()
+                    //     ->numeric($decimalPlaces=3)
+                    //     ->default(0)
+                    //     ->columnSpan([
+                    //         'md' => 2,
+                    //     ]),
+                    // Forms\Components\TextInput::make('total')
+                        // ->label('Subtotal')
+                        // ->disabled()
+                        // ->dehydrated()
+                        // ->numeric($decimalPlaces=2)
+                        // ->required()
+                        // ->columnSpan([
+                        //     'md' => 2,
+                        // ]),
+                ])
+                // ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                //     $data['total']=$data['price']*$data['qty']*(1+$data['gst_rate']);
+                //     return $data;
+                // })
+                ->defaultItems(1)
+                ->columns(['md' => 10])
+                ->live()
+                // ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
+                //     self::updateTotals($get,$set);
+                // })
+                ->required()
         ];
     }
-
 }

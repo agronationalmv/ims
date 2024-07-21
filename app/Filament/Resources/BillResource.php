@@ -171,7 +171,6 @@ class BillResource extends Resource
                             ->label('GST Rate')
                             ->disabled()
                             ->dehydrated()
-                            ->numeric($decimalPlaces = 3)
                             ->required()
                             ->columnSpan([
                                 'md' => 2,

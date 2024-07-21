@@ -46,16 +46,16 @@ class PurchaseRequest extends Model
         return $this->hasMany(PurchaseRequestDetail::class);
     }
 
-    protected static function boot(){
-        parent::boot();
-        self::creating(function($model){
-            $model->reference_no=self::generateReference();
-        });
-    }
+    // protected static function boot(){
+    //     parent::boot();
+    //     self::creating(function($model){
+    //         $model->reference_no=self::generateReference();
+    //     });
+    // }
 
-    protected static function generateReference(){
-        $nextId=self::count()+1;
-        return "PR".str_pad(strval($nextId),6,"0",STR_PAD_LEFT);
-    }
+    // protected static function generateReference(){
+    //     $nextId=self::count()+1;
+    //     return "PR".str_pad(strval($nextId),6,"0",STR_PAD_LEFT);
+    // }
 
 }

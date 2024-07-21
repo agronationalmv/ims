@@ -24,16 +24,11 @@ use Closure;
 class PoReceiveResource extends Resource
 {
     protected static ?string $navigationGroup = "Manage Inventory";
-
-    protected static ?int $navigationSort = 1;
-
+    protected static ?int $navigationSort = 2;
     protected static ?string $model = PoReceive::class;
-
     protected ?PurchaseOrder $purchaseOrder = null;
-
     protected static ?string $modelLabel = 'Item Receipt';
     protected static ?string $pluralModelLabel = 'Item Receipts';
-
     protected static ?string $navigationIcon = 'heroicon-s-tag';
 
     public static function form(Form $form): Form
@@ -126,14 +121,14 @@ class PoReceiveResource extends Resource
                             ->required()
                             ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                                 $product = Product::find($get('product_id'));
-                                $product->unit;
                                 $set('product', $product);
+                                $set('gst_rate', $product->gst_rate);
                             })
                             ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set) {
                                 if ($get('product_id')) {
                                     $product = Product::find($get('product_id'));
-                                    $product->unit;
                                     $set('product', $product);
+                                    $set('gst_rate', $product->gst_rate);
                                 }
                             })
                             ->live()
@@ -172,8 +167,8 @@ class PoReceiveResource extends Resource
                                         ->where('product_id', $productId)
                                         ->value('qty') ?? 0;
 
-                                    $remaining = $maxQty-$currentAllocatedQty;
-                                   
+                                    $remaining = $maxQty - $currentAllocatedQty;
+
                                     if (($currentAllocatedQty + $value) > $maxQty) {
                                         $fail("The quantity exceeds the maximum limit for the purchase order. Maximum: {$maxQty}(Remaining: {$remaining}.000)");
                                     }
@@ -181,26 +176,20 @@ class PoReceiveResource extends Resource
                                     if ($value == 0 || $value < 0) {
                                         $fail("The quantity Cannot be 0");
                                     }
-
-                                    // Check against the available quantity in the ProductStore
-                                    // $productStore = ProductStore::where('store_id', $get('../../store_id'))
-                                    //     ->where('product_id', $productId)
-                                    //     ->first();
-
-                                    // if ($productStore && $value > floatval($productStore->qty)) {
-                                    //     $fail("The quantity must be less than or equal to {$productStore->qty}");
-                                    // }
                                 },
                             ])
                             ->reactive(),
+
+                        Forms\Components\Hidden::make('gst_rate'),
                     ])
                     ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                         $product = Product::find($data['product_id']);
                         $price = floatval($product?->price);
                         $qty = floatval($data['qty']);
                         $data['price'] = $price;
-                        $data['total'] = $price * $qty;
+                        $data['total'] = $price * $qty * (1 + $data['gst_rate']);
                         $data['consuming_qty'] = $qty * floatval($product->uoc_qty ?? 0);
+                        $data['gst_rate'] = $product->gst_rate;
                         return $data;
                     })
                     ->defaultItems(1)
@@ -245,13 +234,13 @@ class PoReceiveResource extends Resource
                 ->required(),
 
             Forms\Components\FileUpload::make('attachment')
-            ->label('Invoive & Delivery Note')
-            ->disk('public')
-            ->required()
-            ->downloadable()
-            ->openable()
-            ->preserveFilenames()
-            ->required(),
+                ->label('Invoice & Delivery Note')
+                ->disk('public')
+                ->required()
+                ->downloadable()
+                ->openable()
+                ->preserveFilenames()
+                ->required(),
         ];
     }
 
