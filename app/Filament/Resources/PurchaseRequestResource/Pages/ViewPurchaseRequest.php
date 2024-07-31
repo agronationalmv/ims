@@ -59,7 +59,7 @@ class ViewPurchaseRequest extends ViewRecord
                         $this->record->status = $status->value;
                         $this->record->save();
                     })
-                    ->modalDescription("Are you sure you want to approve this request?")
+                    ->modalDescription("Are you sure you want to Finalize this request?")
                     ->requiresConfirmation()
                     ->color($status->getColor());
             } else {

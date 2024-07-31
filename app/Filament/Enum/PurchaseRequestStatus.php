@@ -19,7 +19,7 @@ enum PurchaseRequestStatus: string implements HasColor, HasLabel, HasActions
         return match ($this) {
             self::Draft => 'Draft',
             self::Pending => 'Pending',
-            self::Approved => 'Approved',
+            self::Approved => 'Finalized',
             self::Completed => 'Closed',
             self::Rejected => 'Rejected',
         };
@@ -29,7 +29,7 @@ enum PurchaseRequestStatus: string implements HasColor, HasLabel, HasActions
     {
         return match ($this) {
             self::Draft => 'gray',
-            self::Pending => 'warning',
+            self::Pending => 'gray',
             self::Approved => 'warning',
             self::Completed => 'success',
             self::Rejected => 'danger',
@@ -40,8 +40,8 @@ enum PurchaseRequestStatus: string implements HasColor, HasLabel, HasActions
     {
         return match ($this) {
             self::Draft => ['submit'=>self::Pending,'reject'=>self::Rejected],
-            self::Pending => ['approve'=>self::Approved,'reject'=>self::Rejected],
-            self::Approved => ['Close'=>self::Completed,'reject'=>self::Rejected],
+            self::Pending => ['Finalize'=>self::Approved,'Cancel'=>self::Rejected],
+            self::Approved => ['Close'=>self::Completed,'Cancel'=>self::Rejected],
             self::Completed => [],
             self::Rejected => [],
         };
