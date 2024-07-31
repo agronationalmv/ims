@@ -13,7 +13,7 @@ class ProductStorePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->checkPermissionTo('view-any ProductStore');
+        return $user->can('view_any_store');
     }
 
     /**
@@ -21,7 +21,8 @@ class ProductStorePolicy
      */
     public function view(User $user, ProductStore $productstore): bool
     {
-        return $user->checkPermissionTo('view ProductStore');
+        return $user->can('view_store');
+
     }
 
     /**
@@ -29,7 +30,7 @@ class ProductStorePolicy
      */
     public function create(User $user): bool
     {
-        return $user->checkPermissionTo('create ProductStore');
+        return $user->can('create_store');
     }
 
     /**
@@ -37,7 +38,7 @@ class ProductStorePolicy
      */
     public function update(User $user, ProductStore $productstore): bool
     {
-        return $user->checkPermissionTo('update ProductStore');
+        return $user->can('update_store');
     }
 
     /**
@@ -45,7 +46,7 @@ class ProductStorePolicy
      */
     public function delete(User $user, ProductStore $productstore): bool
     {
-        return $user->checkPermissionTo('delete ProductStore');
+        return $user->can('delete_store');
     }
 
     /**
@@ -53,7 +54,7 @@ class ProductStorePolicy
      */
     public function restore(User $user, ProductStore $productstore): bool
     {
-        return $user->checkPermissionTo('restore ProductStore');
+        return $user->can('restore_store');
     }
 
     /**
@@ -61,6 +62,7 @@ class ProductStorePolicy
      */
     public function forceDelete(User $user, ProductStore $productstore): bool
     {
-        return $user->checkPermissionTo('force-delete ProductStore');
+        return $user->can('force_delete_store');
     }
+    
 }
