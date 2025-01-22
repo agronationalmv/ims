@@ -29,14 +29,12 @@ class PurchaseOrderResource extends Resource
 
     protected static ?string $model = PurchaseOrder::class;
 
-    public ?PurchaseRequest $purchaseRequest=null;
-
+    public ?PurchaseRequest $purchaseRequest = null;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
-
         return $form
             ->schema([
                 Forms\Components\Group::make()
@@ -70,7 +68,6 @@ class PurchaseOrderResource extends Resource
                                             );
                             })
                             ->hidden(fn (?string $operation) => $operation=='create'),
-
                     ])
                     ->columnSpan(['lg' => 1])
             ])
@@ -132,155 +129,140 @@ class PurchaseOrderResource extends Resource
 
     public static function getFormSchema(string $section = null): array
     {
-        if($section=='items'){
+        if ($section == 'items') {
             return [
                 Forms\Components\Repeater::make('items')
-                ->relationship()
-                ->schema([
-                    Forms\Components\Select::make('product_id')
-                        ->label('Product')
-                        ->options(function(Forms\Get $get){
-                            return Product::query()->whereHas('stores',function($q)use($get){
-                                $q->where('store_id',$get('../../store_id'));
-                            })->pluck('name', 'id');
+                    ->relationship()
+                    ->schema([
+                        Forms\Components\Select::make('product_id')
+                            ->label('Product')
+                            ->options(function (Forms\Get $get) {
+                                return Product::query()->whereHas('stores', function ($q) use ($get) {
+                                    $q->where('store_id', $get('../../store_id'));
+                                })->pluck('name', 'id');
+                            })
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                $product = Product::find($get('product_id'));
+                                $price = floatval($product?->price);
+                                $gst_rate = floatval($product?->gst_rate);
+                                $set('price', $price);
+                                $set('gst_rate', $gst_rate);
+                                $total = $price * (1 + $gst_rate);
+                                $set('total', $total);
+                                $product?->unit;
+                                $set('product', $product);
+                            })
+                            ->columnSpan(['md' => 5])
+                            ->searchable(),
 
-                        })
-                        ->required()
-                        ->live()
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $product=Product::find($get('product_id'));
-                            $price=floatVal($product?->price);
-                            $gst_rate=floatVal($product?->gst_rate);
-                            $set('price', $price);
-                            $set('gst_rate', $gst_rate);
-                            $total=$price*(1+$gst_rate);
-                            $set('total', $total);
-                            $product?->unit;
-                            $set('product',$product);
-                        })
-                        ->columnSpan([
-                            'md' => 5,
-                        ])
-                        ->searchable(),
+                        Forms\Components\TextInput::make('qty')
+                            ->label('Quantity')
+                            ->prefix(fn(Forms\Get $get) => $get('product.unit.name'))
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                $set('total', round(($get('price') * $get('qty') * (1 + $get('gst_rate'))) ?? 0, 2));
+                            })
+                            ->rules([
+                                fn(Forms\Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    $productId = $get('product_id');
+                                    $purchase_request_id = $get('../../purchase_request_reference_no');
 
-                    Forms\Components\TextInput::make('qty')
-                        ->label('Quantity')
-                        ->prefix(fn(Forms\Get $get)=>$get('product.unit.name'))
-                        ->live(debounce: 500)
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                        })
-                        ->rules([
-                            fn (Forms\Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                                $productId=$get('product_id');
-                                $purchase_request_id=$get('../../purchase_request_reference_no');
-                                
-                                // Check the current allocated quantity and total quantity for the PR
-                                $currentAllocatedQty = PurchaseOrderDetail::whereHas('purchase_order', function ($query) use ($purchase_request_id) {
-                                    $query->where('purchase_request_id', $purchase_request_id);
-                                })
-                                ->where('product_id', $productId)
-                                ->sum('qty') ?? 0;
-                                
-                                if (empty($currentAllocatedQty)) {
-                                    $currentAllocatedQty = 0;
-                                }
-                        
-                                $maxQty = PurchaseRequestDetail::where('purchase_request_id', $purchase_request_id)
-                                    ->where('product_id', $productId)
-                                    ->value('qty');
-                                   
-                                $remaining = $maxQty-$currentAllocatedQty;
-    
-                                if (($currentAllocatedQty + $value) > $maxQty) {
-                                    $fail("The quantity exceeds the maximum limit for the Purchase Request. Maximum: {$maxQty}(Remaining: {$remaining}.000)");
-                                }
+                                    // Check the current allocated quantity and total quantity for the PR
+                                    $currentAllocatedQty = PurchaseOrderDetail::whereHas('purchase_order', function ($query) use ($purchase_request_id) {
+                                        $query->where('purchase_request_id', $purchase_request_id);
+                                    })
+                                        ->where('product_id', $productId)
+                                        ->sum('qty') ?? 0;
 
-                                if($purchase_request_id){
-                                    $prItem=PurchaseRequestDetail::where('purchase_request_id',$purchase_request_id)
-                                        ->where('product_id',$get('product_id'))
-                                        ->first();
-
-                                    if($prItem){
-                                        if($value>floatval($prItem->balance)){
-                                            $fail("The quantity must be less than or equal to PR amount{$prItem->balance}");
-                                        }
-                                    }else{
-                                        $fail("Invalid Product");
+                                    if (empty($currentAllocatedQty)) {
+                                        $currentAllocatedQty = 0;
                                     }
 
+                                    $maxQty = PurchaseRequestDetail::where('purchase_request_id', $purchase_request_id)
+                                        ->where('product_id', $productId)
+                                        ->value('qty');
 
-                                }
+                                    $remaining = $maxQty - $currentAllocatedQty;
 
-                                if($get('qty')<=0){
-                                    $fail("The quantity must be greater than 0");
-                                }
+                                    if (($currentAllocatedQty + $value) > $maxQty) {
+                                        $fail("The quantity exceeds the maximum limit for the Purchase Request. Maximum: {$maxQty}(Remaining: {$remaining}.000)");
+                                    }
 
+                                    if ($purchase_request_id) {
+                                        $prItem = PurchaseRequestDetail::where('purchase_request_id', $purchase_request_id)
+                                            ->where('product_id', $get('product_id'))
+                                            ->first();
 
-                            },
-                        ])
+                                        if ($prItem) {
+                                            if ($value > floatval($prItem->balance)) {
+                                                $fail("The quantity must be less than or equal to PR amount{$prItem->balance}");
+                                            }
+                                        } else {
+                                            $fail("Invalid Product");
+                                        }
+                                    }
 
-                        ->numeric($decimalPlaces=2)
-                        ->default(1)
-                        ->columnSpan([
-                            'md' => 2,
-                        ])
-                        ->required(),
+                                    if ($get('qty') <= 0) {
+                                        $fail("The quantity must be greater than 0");
+                                    }
+                                },
+                            ])
+                            ->numeric($decimalPlaces = 2)
+                            ->default(1)
+                            ->suffix(fn(Forms\Get $get) => $get('qty_suffix'))
+                            ->columnSpan(['md' => 2])
+                            ->required(),
 
-                    Forms\Components\TextInput::make('price')
-                        ->label('Price')
-                        ->live(debounce: 500)
-                        ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                            $set('total', round(($get('price')*$get('qty')*(1+$get('gst_rate'))) ?? 0,2));
-                        })
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 3,
-                        ]),
-                    Forms\Components\TextInput::make('gst_rate')
-                        ->label('GST Rate')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=3)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
-                    Forms\Components\TextInput::make('total')
-                        ->label('Subtotal')
-                        ->disabled()
-                        ->dehydrated()
-                        ->numeric($decimalPlaces=2)
-                        ->required()
-                        ->columnSpan([
-                            'md' => 2,
-                        ]),
-                ])
-                ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                    $data['total']=$data['price']*$data['qty']*(1+$data['gst_rate']);
-                    return $data;
-                })
-                ->defaultItems(1)
-                ->columns([
-                    'md' => 10,
-                ])
-                ->live()
-                ->afterStateHydrated(function(Forms\Get $get, Forms\Set $set){
-                    self::updateTotals($get,$set);
-                })
-                ->afterStateUpdated(function(Forms\Get $get, Forms\Set $set){
-                    self::updateTotals($get,$set);
-                })
-                ->addable(fn(Forms\Get $get)=>$get('purchase_request_id')==null)
-                ->required()
+                        Forms\Components\TextInput::make('price')
+                            ->label('Price')
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                $set('total', round(($get('price') * $get('qty') * (1 + $get('gst_rate'))) ?? 0, 2));
+                            })
+                            ->dehydrated()
+                            ->numeric($decimalPlaces = 2)
+                            ->required()
+                            ->columnSpan(['md' => 3]),
+                        Forms\Components\TextInput::make('gst_rate')
+                            ->label('GST Rate')
+                            ->disabled()
+                            ->dehydrated()
+                            ->numeric($decimalPlaces = 3)
+                            ->required()
+                            ->columnSpan(['md' => 2]),
+                        Forms\Components\TextInput::make('total')
+                            ->label('Subtotal')
+                            ->disabled()
+                            ->dehydrated()
+                            ->numeric($decimalPlaces = 2)
+                            ->required()
+                            ->columnSpan(['md' => 2]),
+                    ])
+                    ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                        $data['total'] = $data['price'] * $data['qty'] * (1 + $data['gst_rate']);
+                        return $data;
+                    })
+                    ->defaultItems(1)
+                    ->columns(['md' => 10])
+                    ->live()
+                    ->afterStateHydrated(function (Forms\Get $get, Forms\Set $set) {
+                        self::updateTotals($get, $set);
+                    })
+                    ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                        self::updateTotals($get, $set);
+                    })
+                    ->addable(fn(Forms\Get $get) => $get('purchase_request_id') == null)
+                    ->required()
             ];
         }
 
         return [
             Forms\Components\TextInput::make('reference_no')
-                ->required(),
+                ->required(fn(Forms\Get $get) => $get('purchase_type') === 'purchase_order')
+                ->readonly(fn(Forms\Get $get) => $get('purchase_type') === 'petty_cash')
+                ->unique(ignoreRecord: true),
             Forms\Components\DatePicker::make('purchase_order_date')
                 ->format('Y-m-d')
                 ->native(false)
@@ -288,12 +270,12 @@ class PurchaseOrderResource extends Resource
                 ->required(),
             Forms\Components\Select::make('store_id')
                 ->relationship('store', 'name')
-                ->disabled(fn(Forms\Get $get)=>$get('purchase_request_id'))
+                ->disabled(fn(Forms\Get $get) => $get('purchase_request_id'))
                 ->required()
                 ->live(),
             Forms\Components\Select::make('expense_account_id')
                 ->relationship('expense_account', 'name')
-                ->disabled(fn(Forms\Get $get)=>$get('purchase_request_id'))
+                ->disabled(fn(Forms\Get $get) => $get('purchase_request_id'))
                 ->required(),
             Forms\Components\Select::make('supplier_id')
                 ->relationship('supplier', 'name')
@@ -309,18 +291,40 @@ class PurchaseOrderResource extends Resource
                         ->modalHeading('Create Supplier')
                         ->modalWidth('lg');
                 }),
-                Forms\Components\Select::make('purchase_request_reference_no')
+            Forms\Components\Select::make('purchase_request_reference_no')
                 ->relationship('purchase_request', 'reference_no', fn ($query) => $query->where('status', 'approved'))
                 ->searchable()
-                ->required()
-        ]; 
+                ->required(),
+            Forms\Components\Select::make('purchase_type')
+                ->label('Purchase Type')
+                ->options([
+                    'purchase_order' => 'Purchase Order',
+                    'petty_cash' => 'Petty Cash',
+                ])
+                ->reactive()
+                ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                    if ($get('purchase_type') === 'petty_cash') {
+                        $referenceNo = PurchaseOrderResource::generateReferenceNumber();
+                        $set('reference_no', $referenceNo);
+                    }
+                })
+                ->required(),
+        ];
+    }
+
+    public static function generateReferenceNumber(): string
+    {
+        $lastOrder = PurchaseOrder::where('reference_no', 'LIKE', 'PettyCash-%')->orderBy('id', 'desc')->first();
+        $lastNumber = $lastOrder ? (int)str_replace('PettyCash-', '', $lastOrder->reference_no) : 0;
+        $newNumber = $lastNumber + 1;
+
+        return 'PettyCash-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     public static function updateTotals(Forms\Get $get, Forms\Set $set): void
     {
         // Retrieve all selected products and remove empty rows
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['qty']));
-    
 
         // Calculate subtotal based on the selected products and quantities
         $subtotal = $selectedProducts->reduce(function ($subtotal, $product) {
@@ -328,13 +332,12 @@ class PurchaseOrderResource extends Resource
         }, 0);
 
         $total_gst = $selectedProducts->reduce(function ($gst_total, $product) {
-            return $gst_total + ($product['price']*$product['gst_rate'] * $product['qty']);
+            return $gst_total + ($product['price'] * $product['gst_rate'] * $product['qty']);
         }, 0);
-    
+
         // Update the state with the new values
         $set('subtotal', number_format($subtotal, 2, '.', ''));
         $set('total_gst', number_format($total_gst, 2, '.', ''));
         $set('net_total', number_format($subtotal + $total_gst, 2, '.', ''));
     }
-    
 }

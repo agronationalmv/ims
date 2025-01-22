@@ -61,6 +61,9 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
             ])
+            ->brandName('GIMS')
+            ->favicon(asset('agrologo.png'))
+            ->darkMode(false)
             ->authGuard('web')
             ->navigationGroups([
                 'Manage Inventory',

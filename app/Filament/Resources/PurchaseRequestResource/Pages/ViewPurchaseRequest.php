@@ -23,8 +23,11 @@ class ViewPurchaseRequest extends ViewRecord
         // if($this->record->status!=PurchaseRequestStatus::Completed){
         //     $actions[]=$this->getPoCreateAction();
         // }
+        
         $actions[]=$this->getCancelFormAction();
-        $actions[]=Actions\EditAction::make();
+        if ($this->record->status->getActions()!== PurchaseRequestStatus::Approved) {
+            $actions[]=Actions\EditAction::make();
+        }
         $hodId = $this->record->department->hod_id; // assuming relationship is defined
         $user = Auth::user();  
         if ($user->id == $hodId ) {

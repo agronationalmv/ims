@@ -175,7 +175,7 @@ class PoReceiveResource extends Resource
                             ->default(1)
                             ->gt(0)
                             ->columnSpan([
-                                'md' => 2,
+                                'md' => 3,
                             ])
                             ->required()
                             ->rules([
@@ -235,7 +235,7 @@ class PoReceiveResource extends Resource
             Forms\Components\TextInput::make('reference_no')
                 ->required(),
             Forms\Components\Select::make('purchase_order_id')
-                ->relationship('purchase_order', 'reference_no')
+                ->relationship('purchase_order', 'reference_no', fn ($query) => $query->where('status', 'approved'))
                 ->searchable()
                 ->disabled(fn (Component $livewire) => $livewire?->purchaseOrder?->id != null),
             Forms\Components\Select::make('store_id')
